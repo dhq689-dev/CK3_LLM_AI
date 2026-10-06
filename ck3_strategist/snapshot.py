@@ -62,6 +62,8 @@ def build_snapshot(graph: WorldGraph, char_id: int) -> RealmSnapshot | None:
         if w.attacker == char_id or w.defender == char_id
     ]
 
+    # Placeholder: "stable" only means the succession list is non-empty. It
+    # does not weigh heir age, dynasty, gender, or succession law.
     succession = char.succession
     stability = "stable" if succession else "unstable"
 
@@ -102,7 +104,11 @@ def _percentile(values: list[int], pct: float) -> int:
 
 
 def bucket_strength(snapshots: list[RealmSnapshot]) -> None:
-    """Assign weak/average/strong buckets by realm-strength percentile."""
+    """Assign weak/average/strong buckets by realm-strength percentile.
+
+    Placeholder: ties (e.g. many rulers with equal strength) all fall into the
+    same bucket, so a large tied group can be entirely "weak" or "strong".
+    """
     strengths = [s.realm_strength for s in snapshots]
     low = _percentile(strengths, 0.33)
     high = _percentile(strengths, 0.66)
@@ -116,7 +122,11 @@ def bucket_strength(snapshots: list[RealmSnapshot]) -> None:
 
 
 def bucket_economic(snapshots: list[RealmSnapshot]) -> None:
-    """Assign weak/average/strong buckets by gold percentile."""
+    """Assign weak/average/strong buckets by gold percentile.
+
+    Placeholder: ties (e.g. many rulers with 0 gold) all fall into the same
+    bucket.
+    """
     golds = [int(s.gold) for s in snapshots]
     low = _percentile(golds, 0.33)
     high = _percentile(golds, 0.66)
@@ -134,7 +144,12 @@ def compute_threats(
     snapshot: RealmSnapshot,
     snapshots: list[RealmSnapshot],
 ) -> list[Threat]:
-    """Rulers in an active war against this ruler, each with a power ratio."""
+    """Rulers in an active war against this ruler, each with a power ratio.
+
+    Placeholder: threats come only from active wars, and only from the war's
+    leader (attacker/defender), not its co-belligerents. Claims and shared
+    de-jure lieges are not yet considered.
+    """
     by_id = {s.ruler_id: s for s in snapshots}
     own = snapshot.realm_strength or 1
     threats: list[Threat] = []

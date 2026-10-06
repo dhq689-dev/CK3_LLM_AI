@@ -64,3 +64,30 @@ def test_unknown_trait_does_not_crash():
         "major_opportunities": [], "active_wars": 0, "claims_available": 0,
     }
     build_prompt(summary)  # must not raise
+
+
+def test_truncate_summary():
+    from ck3_strategist.summary import truncate_summary
+
+    summary = {
+        "traits": [f"t{i}" for i in range(50)],
+        "major_threats": [
+            {"ruler": f"r{i}", "power_ratio": i} for i in range(20)
+        ],
+        "major_opportunities": [f"o{i}" for i in range(50)],
+    }
+    out = truncate_summary(summary)
+    assert len(out["traits"]) == 12
+    assert len(out["major_threats"]) == 5
+    assert len(out["major_opportunities"]) == 8
+    # threats kept strongest-first
+    assert out["major_threats"][0]["power_ratio"] == 19
+
+
+def test_build_summaries_truncates_instead_of_aborting(caplog):
+    reader, graph, snapshots, reference = _setup()
+    # tiny budget forces truncation; must not raise
+    summaries = build_summaries(
+        graph, snapshots, reference, reader.meta_date(), max_tokens=1
+    )
+    assert len(summaries) == len(snapshots)

@@ -6,9 +6,13 @@ JSON-serializable dict, and enforces a token budget.
 
 from __future__ import annotations
 
+import logging
+
 from .graph import WorldGraph
 from .reference import ReferenceData
 from .snapshot import RealmSnapshot, Threat
+
+logger = logging.getLogger(__name__)
 
 _SKILL_NAMES = [
     "diplomacy",
@@ -21,6 +25,11 @@ _SKILL_NAMES = [
 
 
 def compute_age(birth: str, current: str) -> int | None:
+    """Age in whole years.
+
+    Placeholder: compares birth/current years only, so it can be off by one
+    depending on the month/day. Refine with full date comparison later.
+    """
     if not birth or not current:
         return None
     try:
@@ -89,6 +98,25 @@ def estimate_tokens(summary: dict) -> int:
     return len(json.dumps(summary)) // 4
 
 
+def truncate_summary(
+    summary: dict,
+    max_traits: int = 12,
+    max_threats: int = 5,
+    max_opportunities: int = 8,
+) -> dict:
+    """Cap lower-priority fields so the summary stays within the token budget."""
+    summary["traits"] = summary.get("traits", [])[:max_traits]
+    summary["major_threats"] = sorted(
+        summary.get("major_threats", []),
+        key=lambda t: t.get("power_ratio", 0),
+        reverse=True,
+    )[:max_threats]
+    summary["major_opportunities"] = summary.get("major_opportunities", [])[
+        :max_opportunities
+    ]
+    return summary
+
+
 def build_summaries(
     graph: WorldGraph,
     snapshots: list[RealmSnapshot],
@@ -96,14 +124,23 @@ def build_summaries(
     current_date: str,
     max_tokens: int = 5000,
 ) -> list[dict]:
-    """Build summaries for all snapshots, asserting the token budget."""
+    """Build summaries for all snapshots, truncating any that exceed the budget.
+
+    Unlike a bare ``assert``, this never aborts the batch and survives
+    ``python -O``: oversized summaries are capped and logged.
+    """
     summaries = []
     for snap in snapshots:
         threats = _threats_for(graph, snap, snapshots)
         summary = build_summary(graph, snap, reference, threats, current_date)
-        assert estimate_tokens(summary) < max_tokens, (
-            f"summary for {snap.ruler_name} exceeds {max_tokens} tokens"
-        )
+        if estimate_tokens(summary) >= max_tokens:
+            summary = truncate_summary(summary)
+            logger.warning(
+                "summary for %s exceeded %d tokens; truncated to %d",
+                snap.ruler_name,
+                max_tokens,
+                estimate_tokens(summary),
+            )
         summaries.append(summary)
     return summaries
 

@@ -50,7 +50,7 @@ class Dynasty:
     id: int
     name: str = ""
     prestige: float = 0.0
-    renown: float = 0.0
+    renown: float = 0.0  # placeholder: not extracted from the save yet
 
 
 @dataclass
