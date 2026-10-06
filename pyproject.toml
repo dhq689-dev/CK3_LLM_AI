@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ck3-strategist"
+version = "0.1.0"
+description = "Parse CK3 saves into an LLM-consumable strategic world state"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["ck3_strategist*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

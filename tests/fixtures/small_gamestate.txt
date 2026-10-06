@@ -1,0 +1,180 @@
+SAV010256987c3c00007f84
+meta_data={
+	save_game_version=15
+	version="1.19.0.6"
+	meta_date=918.11.5
+	meta_player_name="Vali Assad"
+	meta_title_name="Vilayet of Alexandretta"
+	meta_player_tier=2
+}
+landed_titles={
+0={
+	key=d_swabia
+	holder=16801936
+	date=867.1.1
+	capital=1234
+	heir={ 16796577 }
+	history={ 867.1.1=16801936 }
+	title_name_data={
+		name="Duchy of Swabia"
+	}
+	treasury={
+	}
+}
+1={
+	key=c_colmar
+	holder=47802
+	de_facto_liege=0
+	de_jure_liege=0
+	capital=1235
+	treasury={
+	}
+}
+2={
+	key=k_france
+	holder=16801936
+	date=900.1.1
+	capital=1234
+	heir={ 16796577 }
+	treasury={
+	}
+}
+3={
+	key=e_byzantium
+	holder=33597185
+	date=800.1.1
+	capital=9999
+	treasury={
+	}
+}
+}
+dynasties={
+2878={
+	name="dynn_Chandela"
+	found_date=800.1.1
+	head_of_house=33597185
+	dynasty=2878
+}
+2880={
+	name="dynn_Solanki"
+	found_date=9999.1.1
+	dynasty=2880
+}
+}
+living={
+16801936={
+	first_name="Blaz"
+	birth=868.3.23
+	culture=180
+	faith=135
+	dynasty_house=2878
+	skill={ 0 0 9 4 7 7 }
+	traits={ 63 59 55 3 }
+	family_data={
+		primary_spouse=17313
+		spouse=17313
+		child={ 16808732 16807449 }
+	}
+	alive_data={
+		fertility=0.58616
+		health=3.41801
+		piety={
+			currency=332.31
+			accumulated=1282.31
+		}
+		prestige={
+			currency=529.32
+			accumulated=1379.32
+		}
+		claim={ {
+				title=3238
+			}
+ }
+		languages={ language_south_slavic }
+	}
+	landed_data={
+		domain={ 0 2 }
+		current_strength=535
+		strength=535
+		levy=335
+		power=11900
+		balance=2.90321
+		succession={ 16796577 16808732 }
+		government=feudal_government
+		realm_capital=1234
+	}
+}
+47802={
+	first_name="Urmas"
+	birth=876.10.26
+	culture=418
+	faith=50
+	skill={ 8 5 5 6 8 7 }
+	traits={ 71 78 73 }
+	family_data={
+	}
+	alive_data={
+		claim={ {
+				title=1
+			}
+ }
+	}
+	landed_data={
+		domain={ 1 }
+		strength=112
+		levy=80
+		power=1200
+		balance=0.5
+		succession={ 16808732 }
+		government=feudal_government
+	}
+}
+33597185={
+	first_name="Basileios"
+	birth=840.1.1
+	culture=180
+	faith=135
+	skill={ 10 10 10 10 10 10 }
+	traits={ 63 }
+	family_data={
+	}
+	alive_data={
+	}
+	landed_data={
+		domain={ 3 }
+		strength=2000
+		levy=1500
+		power=50000
+		balance=100.0
+		succession={ 33597185 }
+		government=imperial_government
+	}
+}
+}
+wars={
+active_wars={
+469762048={
+	attacker={
+		participants={ {
+				character=33604054
+				date=918.9.5
+			}
+ }
+	}
+	defender={
+		participants={ {
+				character=16800639
+				date=918.9.5
+			}
+ }
+	}
+	start_date=918.9.5
+	casus_belli={
+		type=county_conquest_cb
+		targeted_titles={ 2675 }
+		attacker=33604054
+		defender=16800639
+	}
+}
+}
+}
