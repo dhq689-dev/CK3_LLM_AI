@@ -1,9 +1,17 @@
 # Reference data
 
-Static ID→name lookup tables for traits, cultures, faiths, dynasty houses, and
-title display names. The save stores numeric IDs; these tables resolve them to
-human-readable strings for the LLM.
+ID→name lookup tables for traits, cultures, faiths, and dynasty houses.
 
-Populate with JSON files (e.g. `traits.json`, `cultures.json`, `faiths.json`,
-`houses.json`, `title_names.json`). Sources: the game's `common/` definitions
-or community dumps.
+These mappings are **extracted from the save itself** at runtime (see
+`ck3_strategist/reference.py`), not shipped as static files:
+
+- `traits_lookup`            → trait ID → key
+- `culture_manager.cultures` → culture ID → `culture_template`
+- `religion.faiths`          → faith ID → `faith_type`
+- `dynasties.dynasty_house`  → house ID → `name`
+
+This keeps the parser self-contained and version-proof (the mappings live in
+the save, so they never drift from the game data).
+
+This directory is reserved for any future static tables (e.g. title-key →
+display-name localization) that cannot be sourced from the save.

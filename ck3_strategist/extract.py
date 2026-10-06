@@ -175,3 +175,20 @@ class SaveReader:
     def titles(self) -> Iterator[Title]:
         for key, d in self.stream_entries("landed_titles"):
             yield extract_title(int(key), d)
+
+    def read_section(self, name: str) -> dict | list | None:
+        """Read and parse a whole section into a nested structure.
+
+        Used for the small reference-data sections (traits_lookup,
+        culture_manager, religion, dynasties), not the big
+        living/landed_titles sections.
+        """
+        section = self.index.get(name)
+        if section is None:
+            return None
+        start, end = self.index.byte_range(name, self.file_size)
+        with open(self.path, "rb") as f:
+            f.seek(start)
+            data = f.read(end - start)
+        text = data.decode("utf-8", "replace")
+        return parse(text)[name]
