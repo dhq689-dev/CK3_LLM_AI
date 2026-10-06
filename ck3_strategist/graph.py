@@ -23,9 +23,13 @@ class WorldGraph:
         self.wars = wars
         # liege title id -> list of vassal title ids (for fast realm traversal)
         self._vassal_titles: dict[int, list[int]] = {}
+        # holder id -> list of held title ids (for fast primary-title lookup)
+        self._titles_by_holder: dict[int, list[int]] = {}
         for t in titles.values():
             if t.de_facto_liege is not None:
                 self._vassal_titles.setdefault(t.de_facto_liege, []).append(t.id)
+            if t.holder is not None:
+                self._titles_by_holder.setdefault(t.holder, []).append(t.id)
 
     @classmethod
     def from_save(cls, reader: SaveReader) -> "WorldGraph":
@@ -45,10 +49,10 @@ class WorldGraph:
 
     def primary_title(self, char_id: int) -> Title | None:
         """Highest-rank title held by the character."""
-        held = [t for t in self.titles.values() if t.holder == char_id]
-        if not held:
+        held_ids = self._titles_by_holder.get(char_id)
+        if not held_ids:
             return None
-        return max(held, key=lambda t: t.rank)
+        return max((self.titles[tid] for tid in held_ids), key=lambda t: t.rank)
 
     def get_realm_titles(self, char_id: int) -> list[Title]:
         """All titles whose ``de_facto_liege`` chain reaches the primary title."""

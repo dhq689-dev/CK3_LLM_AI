@@ -80,6 +80,23 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## Usage
+
+```bash
+# plaintext gamestate, or a .ck3 save (ZIP; gamestate is extracted automatically)
+python -m ck3_strategist path/to/gamestate_1.txt --output output --tier 1
+
+# also run the LLM strategist against a local Ollama model
+python -m ck3_strategist path/to/save.ck3 --llm ollama --model llama3
+```
+
+Options:
+
+- `--tier 1` (default) — kings and emperors only.
+- `--tier 2` — also the top dukes.
+- `--llm none` (default) / `--llm ollama`.
+- `--output DIR` — where `summaries.json` (and `intents.json`) are written.
+
 ## Project layout
 
 ```text
@@ -87,13 +104,14 @@ ck3_strategist/   # the parser package
   lexer.py        # byte-safe tokenizer
   parser.py       # recursive-descent parser
   indexer.py      # top-level section indexer
-  extract.py      # character/title/dynasty/war extractors
+  extract.py      # character/title/dynasty/war/memory extractors
   reference.py    # ID→name lookup tables (from the save)
   graph.py        # WorldGraph (liege/vassal hierarchy)
   snapshot.py     # RealmSnapshot + derived values
   tiers.py        # significant-ruler detection
   summary.py      # StrategicSummary builder
   strategist.py   # LLM strategist (intent contract)
+  cli.py          # command-line entry point
 reference_data/   # reserved for static lookup tables
 tests/            # unit tests + hand-written fixture
 sample_savedata/  # real saves (gitignored, large)
@@ -104,4 +122,4 @@ sample_savedata/  # real saves (gitignored, large)
 - `agents.md` — project vision, data model, and implementation plan.
 - `parser_implementation.md` — authoritative parser spec (grammar, field map,
   derived-value logic, version-proofing).
-- `review_notes.md` — design review and recommendations.
+- `review_notes.md` / `review_notes_v2.md` — design reviews and recommendations.
