@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .graph import WorldGraph, title_rank
+from .graph import WorldGraph
 
 _RANK_NAMES = {0: "baron", 1: "count", 2: "duke", 3: "king", 4: "emperor"}
 
@@ -70,7 +70,7 @@ def build_snapshot(graph: WorldGraph, char_id: int) -> RealmSnapshot | None:
         ruler_name=char.name,
         primary_title_id=primary.id,
         primary_title_key=primary.key,
-        rank=rank_name(title_rank(primary.key)),
+        rank=rank_name(primary.rank),
         independent=primary.de_facto_liege is None,
         vassal_ids=[v.id for v in vassals],
         claim_ids=char.claims,

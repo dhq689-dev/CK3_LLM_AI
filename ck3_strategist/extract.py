@@ -63,6 +63,19 @@ class War:
     start_date: str = ""
 
 
+_RANK = {"b": 0, "c": 1, "d": 2, "k": 3, "e": 4}
+_TIER_RANK = {"barony": 0, "county": 1, "duchy": 2, "kingdom": 3, "empire": 4}
+
+
+def title_rank(key: str, tier: str = "") -> int:
+    """Rank of a title, from its key prefix or (for modded prefixes) its tier."""
+    if len(key) >= 2 and key[1] == "_" and key[0] in _RANK:
+        return _RANK[key[0]]
+    if tier in _TIER_RANK:
+        return _TIER_RANK[tier]
+    return -1
+
+
 @dataclass
 class Title:
     id: int
@@ -73,6 +86,11 @@ class Title:
     capital: int | None = None
     heir: list[int] = field(default_factory=list)
     history: dict = field(default_factory=dict)
+    tier: str = ""
+
+    @property
+    def rank(self) -> int:
+        return title_rank(self.key, self.tier)
 
 
 def _as_list(value) -> list:
@@ -250,4 +268,13 @@ class SaveReader:
         """The save's current date (e.g. '918.11.5')."""
         md = self.read_section("meta_data") or {}
         return md.get("meta_date", "")
+
+    def dynamic_templates(self) -> dict[str, str]:
+        """Map modded title keys (e.g. ``x_mc_0``) to their tier."""
+        lt = self.read_section("landed_titles") or {}
+        mapping: dict[str, str] = {}
+        for entry in lt.get("dynamic_templates") or []:
+            if isinstance(entry, dict) and "key" in entry and "tier" in entry:
+                mapping[entry["key"]] = entry["tier"]
+        return mapping
 

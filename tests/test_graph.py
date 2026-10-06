@@ -1,7 +1,7 @@
 """Tests for the WorldGraph."""
 
-from ck3_strategist.extract import SaveReader
-from ck3_strategist.graph import WorldGraph, title_rank
+from ck3_strategist.extract import SaveReader, title_rank
+from ck3_strategist.graph import WorldGraph
 
 FIXTURE = "tests/fixtures/small_gamestate.txt"
 
@@ -13,6 +13,13 @@ def test_title_rank():
     assert title_rank("k_france") == 3
     assert title_rank("e_byzantium") == 4
     assert title_rank("h_china") == -1
+
+
+def test_title_rank_with_tier():
+    # modded prefixes resolve via the tier string
+    assert title_rank("x_mc_0", "duchy") == 2
+    assert title_rank("x_mc_0", "kingdom") == 3
+    assert title_rank("x_mc_0") == -1  # no tier -> unknown
 
 
 def test_worldgraph_from_fixture():

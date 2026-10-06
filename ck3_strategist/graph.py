@@ -8,15 +8,6 @@ from __future__ import annotations
 
 from .extract import Character, Dynasty, SaveReader, Title, War
 
-_RANK = {"b": 0, "c": 1, "d": 2, "k": 3, "e": 4}
-
-
-def title_rank(key: str) -> int:
-    """Rank of a title key (``b_`` < ``c_`` < ``d_`` < ``k_`` < ``e_``)."""
-    if len(key) >= 2 and key[1] == "_" and key[0] in _RANK:
-        return _RANK[key[0]]
-    return -1
-
 
 class WorldGraph:
     def __init__(
@@ -42,6 +33,11 @@ class WorldGraph:
         titles = {t.id: t for t in reader.titles()}
         dynasties = {d.id: d for d in reader.dynasties()}
         wars = {w.id: w for w in reader.wars()}
+        # resolve modded title prefixes (e.g. x_mc_0) to their tier
+        templates = reader.dynamic_templates()
+        for t in titles.values():
+            if t.key in templates:
+                t.tier = templates[t.key]
         return cls(characters, titles, dynasties, wars)
 
     def get_ruler(self, char_id: int) -> Character | None:
@@ -52,7 +48,7 @@ class WorldGraph:
         held = [t for t in self.titles.values() if t.holder == char_id]
         if not held:
             return None
-        return max(held, key=lambda t: title_rank(t.key))
+        return max(held, key=lambda t: t.rank)
 
     def get_realm_titles(self, char_id: int) -> list[Title]:
         """All titles whose ``de_facto_liege`` chain reaches the primary title."""
