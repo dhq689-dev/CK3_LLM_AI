@@ -164,7 +164,3 @@ ruff check .   # lint
 mypy           # type-check
 pytest         # test
 ```
-
-## License
-
-MIT — see `LICENSE`.
