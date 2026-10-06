@@ -246,3 +246,8 @@ class SaveReader:
             if isinstance(entry, dict):
                 yield extract_war(int(id_str), entry)
 
+    def meta_date(self) -> str:
+        """The save's current date (e.g. '918.11.5')."""
+        md = self.read_section("meta_data") or {}
+        return md.get("meta_date", "")
+
