@@ -11,6 +11,7 @@ landed_titles={
 0={
 	key=d_swabia
 	holder=16801936
+	de_facto_liege=2
 	date=867.1.1
 	capital=1234
 	heir={ 16796577 }
@@ -49,6 +50,7 @@ landed_titles={
 }
 }
 dynasties={
+dynasty_house={
 2878={
 	name="dynn_Chandela"
 	found_date=800.1.1
@@ -59,6 +61,16 @@ dynasties={
 	name="dynn_Solanki"
 	found_date=9999.1.1
 	dynasty=2880
+}
+}
+dynasties={
+2878={
+	key="RICE_Chandela"
+	prestige={ currency=198.2 }
+}
+2880={
+	key="RICE_Solanki"
+}
 }
 }
 living={

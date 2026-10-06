@@ -46,6 +46,24 @@ class Character:
 
 
 @dataclass
+class Dynasty:
+    id: int
+    name: str = ""
+    prestige: float = 0.0
+    renown: float = 0.0
+
+
+@dataclass
+class War:
+    id: int
+    war_type: str = ""
+    attacker: int | None = None
+    defender: int | None = None
+    targeted_titles: list[int] = field(default_factory=list)
+    start_date: str = ""
+
+
+@dataclass
 class Title:
     id: int
     key: str = ""
@@ -115,6 +133,29 @@ def extract_title(title_id: int, d: dict) -> Title:
         capital=d.get("capital"),
         heir=_as_list(d.get("heir")),
         history=d.get("history") or {},
+    )
+
+
+
+def extract_dynasty(dyn_id: int, d: dict) -> Dynasty:
+    prestige = (d.get("prestige") or {}).get("currency", 0.0)
+    return Dynasty(
+        id=dyn_id,
+        name=d.get("key", ""),
+        prestige=prestige,
+        renown=0.0,
+    )
+
+
+def extract_war(war_id: int, d: dict) -> War:
+    cb = d.get("casus_belli") or {}
+    return War(
+        id=war_id,
+        war_type=cb.get("type", ""),
+        attacker=cb.get("attacker"),
+        defender=cb.get("defender"),
+        targeted_titles=_as_list(cb.get("targeted_titles")),
+        start_date=d.get("start_date", ""),
     )
 
 
@@ -192,3 +233,16 @@ class SaveReader:
             data = f.read(end - start)
         text = data.decode("utf-8", "replace")
         return parse(text)[name]
+
+    def dynasties(self) -> Iterator[Dynasty]:
+        dyn = self.read_section("dynasties") or {}
+        for id_str, entry in (dyn.get("dynasties") or {}).items():
+            if isinstance(entry, dict):
+                yield extract_dynasty(int(id_str), entry)
+
+    def wars(self) -> Iterator[War]:
+        w = self.read_section("wars") or {}
+        for id_str, entry in (w.get("active_wars") or {}).items():
+            if isinstance(entry, dict):
+                yield extract_war(int(id_str), entry)
+

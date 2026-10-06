@@ -8,13 +8,13 @@ FIXTURE = "tests/fixtures/small_gamestate.txt"
 
 def test_reference_data_from_fixture():
     # The fixture has no traits_lookup/culture_manager/religion sections, so
-    # the loader should return empty mappings without crashing.
+    # those mappings are empty; it does have a dynasty_house section.
     reader = SaveReader(FIXTURE)
     ref = ReferenceData.from_save(reader)
     assert ref.traits == {}
     assert ref.cultures == {}
     assert ref.faiths == {}
-    assert ref.houses == {}
+    assert ref.houses == {2878: "dynn_Chandela", 2880: "dynn_Solanki"}
 
 
 def test_lookup_methods_return_none_for_unknown():
