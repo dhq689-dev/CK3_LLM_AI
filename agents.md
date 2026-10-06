@@ -776,16 +776,18 @@ semantic participant keys (`rival`, `enemy`, `ally`, `imprisoner`, `victim`,
 @dataclass
 class Memory:
     id: int
-    type: str                    # "became_rivals", "offensive_war", ...
-    participants: dict[str, int] # {"rival": 2300}, {"imprisoner": 8549}, ...
+    type: str                      # "became_rivals", "offensive_war", ...
+    participants: dict[str, list[int]]  # {"rival": [2300]}, {"witness": [10, 11]}, ...
     creation_date: str
+    end_date: str                  # expiry; filtered against meta_date()
 
 @dataclass
 class Relationship:
     from_char: int
     to_char: int
-    kind: str        # "rival", "enemy", "ally", "grudge", "friend", ...
+    kind: str        # "rival", "war_enemy", "ally", "captor", "friend", ...
     date: str
+    memory_type: str # the raw game memory type (mod-agnostic)
 ```
 
 ## Milestones

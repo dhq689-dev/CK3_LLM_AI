@@ -95,3 +95,21 @@ def test_build_summaries_truncates_instead_of_aborting(caplog):
         graph, snapshots, reference, reader.meta_date(), max_tokens=1
     )
     assert len(summaries) == len(snapshots)
+
+
+def test_build_summaries_includes_relationships():
+    reader, graph, snapshots, reference = _setup()
+    from ck3_strategist.relationships import RelationshipGraph
+
+    rg = RelationshipGraph.from_save(
+        graph, reader.memories(), current_date=reader.meta_date()
+    )
+    summaries = build_summaries(
+        graph, snapshots, reference, reader.meta_date(), relationship_graph=rg
+    )
+    by_name = {s["ruler_name"]: s for s in summaries}
+    blaz = by_name["Blaz"]
+    kinds = {r["kind"] for r in blaz["relationships"]}
+    assert "friend" in kinds
+    assert "war_enemy" in kinds
+    assert all("ruler" in r and "date" in r for r in blaz["relationships"])

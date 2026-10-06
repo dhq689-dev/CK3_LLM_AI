@@ -52,6 +52,7 @@ def build_summary(
     reference: ReferenceData,
     threats: list[Threat],
     current_date: str,
+    relationships: list[dict] | None = None,
 ) -> dict:
     char = graph.get_ruler(snapshot.ruler_id)
     skills = {}
@@ -86,6 +87,7 @@ def build_summary(
             for t in threats
         ],
         "major_opportunities": opportunities,
+        "relationships": relationships or [],
         "active_wars": len(snapshot.war_ids),
         "claims_available": len(snapshot.claim_ids),
     }
@@ -103,6 +105,7 @@ def truncate_summary(
     max_traits: int = 12,
     max_threats: int = 5,
     max_opportunities: int = 8,
+    max_relationships: int = 10,
 ) -> dict:
     """Cap lower-priority fields so the summary stays within the token budget."""
     summary["traits"] = summary.get("traits", [])[:max_traits]
@@ -114,6 +117,7 @@ def truncate_summary(
     summary["major_opportunities"] = summary.get("major_opportunities", [])[
         :max_opportunities
     ]
+    summary["relationships"] = summary.get("relationships", [])[:max_relationships]
     return summary
 
 
@@ -122,6 +126,7 @@ def build_summaries(
     snapshots: list[RealmSnapshot],
     reference: ReferenceData,
     current_date: str,
+    relationship_graph=None,
     max_tokens: int = 5000,
 ) -> list[dict]:
     """Build summaries for all snapshots, truncating any that exceed the budget.
@@ -132,7 +137,12 @@ def build_summaries(
     summaries = []
     for snap in snapshots:
         threats = _threats_for(graph, snap, snapshots)
-        summary = build_summary(graph, snap, reference, threats, current_date)
+        relationships = _relationships_for(
+            relationship_graph, graph, snap.ruler_id
+        )
+        summary = build_summary(
+            graph, snap, reference, threats, current_date, relationships
+        )
         if estimate_tokens(summary) >= max_tokens:
             summary = truncate_summary(summary)
             logger.warning(
@@ -143,6 +153,27 @@ def build_summaries(
             )
         summaries.append(summary)
     return summaries
+
+
+def _relationships_for(
+    relationship_graph, graph: WorldGraph, char_id: int, max_items: int = 20
+) -> list[dict]:
+    """Project a ruler's relationships into compact, LLM-facing dicts."""
+    if relationship_graph is None:
+        return []
+    from .relationships import date_key
+
+    rels = sorted(
+        relationship_graph.of(char_id),
+        key=lambda r: date_key(r.date),
+        reverse=True,
+    )
+    items = []
+    for r in rels[:max_items]:
+        other = graph.characters.get(r.to_char)
+        name = other.name if other else str(r.to_char)
+        items.append({"ruler": name, "kind": r.kind, "date": r.date})
+    return items
 
 
 def _threats_for(

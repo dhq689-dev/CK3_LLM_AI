@@ -40,6 +40,18 @@ def load_mapping(path: str | Path | None = None) -> dict[str, dict[str, str]]:
         return json.load(f)
 
 
+def date_key(date: str) -> int:
+    """Comparable integer for a ``Y.M.D`` date (``0`` if unparseable)."""
+    parts = date.split(".")
+    if len(parts) != 3:
+        return 0
+    try:
+        year, month, day = (int(p) for p in parts)
+    except ValueError:
+        return 0
+    return year * 10000 + month * 100 + day
+
+
 def build_memory_owners(graph: WorldGraph) -> dict[int, int]:
     """Map ``memory_id -> owning character id`` (via ``Character.memories``)."""
     owners: dict[int, int] = {}
@@ -53,14 +65,22 @@ def build_relationships(
     graph: WorldGraph,
     memories: Iterable[Memory],
     mapping: dict[str, dict[str, str]],
+    current_date: str = "",
 ) -> list[Relationship]:
-    """Derive relationship edges from memories."""
+    """Derive relationship edges from memories.
+
+    Memories whose ``end_date`` is in the past (relative to ``current_date``)
+    are skipped so the LLM is not shown expired grudges or friendships.
+    """
     owners = build_memory_owners(graph)
+    current = date_key(current_date)
     relationships: list[Relationship] = []
     for mem in memories:
         owner = owners.get(mem.id)
         if owner is None:
             continue
+        if mem.end_date and current and date_key(mem.end_date) < current:
+            continue  # expired memory
         type_map = mapping.get(mem.type)
         if not type_map:
             continue  # unknown/modded type -> ignored by the graph
@@ -116,10 +136,11 @@ class RelationshipGraph:
         graph: WorldGraph,
         memories: Iterable[Memory],
         mapping: dict[str, dict[str, str]] | None = None,
+        current_date: str = "",
     ) -> RelationshipGraph:
         if mapping is None:
             mapping = load_mapping()
-        rels = build_relationships(graph, memories, mapping)
+        rels = build_relationships(graph, memories, mapping, current_date)
         rels.extend(family_relationships(graph))
         return cls(_dedupe(rels))
 

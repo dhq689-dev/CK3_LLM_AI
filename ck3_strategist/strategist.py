@@ -47,6 +47,10 @@ def build_prompt(summary: dict, retry_error: str | None = None) -> str:
         for t in (summary.get("major_threats") or [])
     ) or "none"
     opportunities = ", ".join(summary.get("major_opportunities") or []) or "none"
+    relationships = ", ".join(
+        f"{r['ruler']} ({r['kind']})"
+        for r in (summary.get("relationships") or [])
+    ) or "none"
 
     prompt = f"""You are the strategic advisor for a Crusader Kings III ruler.
 Given the situation below, produce a coherent 5-year strategic plan that is
@@ -64,6 +68,7 @@ Succession: {summary.get('succession_stability')}
 Active wars: {summary.get('active_wars')}
 Threats: {threats}
 Opportunities: {opportunities}
+Relationships: {relationships}
 
 Respond with ONLY a JSON object in this exact format:
 {{

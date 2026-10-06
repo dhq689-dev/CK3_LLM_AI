@@ -102,7 +102,7 @@ Phase 2 (memory, relationships, negotiation) is in progress:
 
 - [x] Milestone 10 — Memory extractor
 - [x] Milestone 11 — Relationship graph
-- [ ] Milestone 12 — Relationship summary (LLM-facing)
+- [x] Milestone 12 — Relationship summary (LLM-facing)
 - [ ] Milestone 13 — Negotiation system (sketch)
 
 ## Setup

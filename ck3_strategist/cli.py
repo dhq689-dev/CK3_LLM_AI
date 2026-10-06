@@ -63,7 +63,15 @@ def run_pipeline(
     wanted = {TIER_1} if tier == 1 else {TIER_1, TIER_2}
     selected = [s for s in snapshots if tiers[s.ruler_id] in wanted]
 
-    summaries = build_summaries(graph, selected, reference, reader.meta_date())
+    from .relationships import RelationshipGraph
+
+    current_date = reader.meta_date()
+    relationships = RelationshipGraph.from_save(
+        graph, reader.memories(), current_date=current_date
+    )
+    summaries = build_summaries(
+        graph, selected, reference, current_date, relationship_graph=relationships
+    )
 
     if llm_call is None:
         return summaries, None

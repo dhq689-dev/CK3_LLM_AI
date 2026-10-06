@@ -68,3 +68,34 @@ def test_repeated_participants_create_multiple_edges():
     )
     rels = build_relationships(graph, [mem], load_mapping())
     assert {(r.to_char, r.kind) for r in rels} == {(11, "friend"), (22, "friend")}
+
+
+def test_expired_memory_filtered():
+    graph, _ = _setup()
+    graph.characters[16801936].memories.extend([2000, 2001])
+    expired = Memory(
+        id=2000,
+        type="became_friends",
+        participants={"new_relation": [5]},
+        creation_date="900.1.1",
+        end_date="910.1.1",
+    )
+    active = Memory(
+        id=2001,
+        type="became_friends",
+        participants={"new_relation": [6]},
+        creation_date="900.1.1",
+        end_date="950.1.1",
+    )
+    rels = build_relationships(
+        graph, [expired, active], load_mapping(), current_date="918.11.5"
+    )
+    assert [r.to_char for r in rels] == [6]
+
+
+def test_date_key():
+    from ck3_strategist.relationships import date_key
+
+    assert date_key("918.11.5") > date_key("910.1.1")
+    assert date_key("918.11.5") == 9181105
+    assert date_key("garbage") == 0
