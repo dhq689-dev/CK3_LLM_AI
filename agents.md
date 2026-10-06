@@ -729,3 +729,138 @@ output matching the contract.
   contains unknown keys and title prefixes.
 - Use `de_facto_liege` for politics, `de_jure_liege` only for claims/expansion.
 - The parser must remain LLM-agnostic; the LLM layer consumes JSON only.
+
+---
+
+# Phase 2 Plan — Memory, Relationships, Negotiation
+
+Phase 2 turns the raw memories (already extracted in Phase 1) into a
+relationship layer: historical grudges, rivalries, friendships, and a
+negotiation system. It must stay mod-, version-, and LLM-agnostic.
+
+## Key insight
+
+The save already encodes relationship *semantics* in the memory participant
+keys. A memory is not just "something happened" — it is "I became rivals with
+X", "I was imprisoned by Y", "I fought an offensive war against Z":
+
+```text
+became_rivals  -> participants={ rival=2300 }
+offensive_war  -> participants={ other_party=2876 }
+imprisoned     -> participants={ imprisoner=8549 }
+became_friends -> participants={ new_relation=14857 }
+```
+
+So relationships are *derived*, not inferred — the game tells us the type and
+direction directly. Verified against `gamestate_1.txt`: 154,142 memories with
+semantic participant keys (`rival`, `enemy`, `ally`, `imprisoner`, `victim`,
+`spouse`, `child`, `guardian`, `ward`, `other_party`, ...).
+
+## Design principles
+
+1. **Mod-agnostic** — never hardcode a closed set of memory types or
+   participant keys. Relationship derivation uses a *configurable mapping*
+   (a JSON data file), not `if type == "became_rivals"` in code. A mod adding
+   a new memory type needs a new mapping entry, not a code change.
+2. **Version-agnostic** — `character_memory_manager` with its `database={}`
+   wrapper is verified stable across 1.17 and 1.19; the memory fields
+   (`type`, `participants`, `creation_date`) are stable.
+3. **LLM-agnostic** — two outputs, both plain JSON:
+   - a **structured relationship graph** (for non-LLM logic: threat
+     detection, stability),
+   - a **raw memory summary** (for the LLM to interpret naturally).
+
+## Data model
+
+```python
+@dataclass
+class Memory:
+    id: int
+    type: str                    # "became_rivals", "offensive_war", ...
+    participants: dict[str, int] # {"rival": 2300}, {"imprisoner": 8549}, ...
+    creation_date: str
+
+@dataclass
+class Relationship:
+    from_char: int
+    to_char: int
+    kind: str        # "rival", "enemy", "ally", "grudge", "friend", ...
+    date: str
+```
+
+## Milestones
+
+### Milestone 10 — Memory extractor
+
+- Stream `character_memory_manager.database` (154k entries) into `Memory`
+  objects.
+- Link each memory to its owner via `Character.memories` (already extracted).
+
+**Verify:** extract a known memory; assert type/participants/date match the raw
+file.
+
+### Milestone 11 — Relationship graph
+
+- Build `Relationship` edges from memories + `family_data` (spouse/child are
+  already relationships).
+- Use a configurable `memory_type + participant_key -> kind` mapping (JSON in
+  `reference_data/`).
+
+**Verify:** for a known ruler, list their rivals, enemies, allies, and grudges;
+eyeball that they are sensible.
+
+### Milestone 12 — Relationship summary (LLM-facing)
+
+- Add a `relationships` block to the `StrategicSummary` (or a sibling
+  structure): grudges, rivalries, friendships, alliances, each with a date.
+- Keep it under the token budget.
+
+**Verify:** summaries include relationships; still <5k tokens.
+
+### Milestone 13 — Negotiation system (sketch)
+
+A negotiation is just an *intent* — the LLM decides who to ally with, marry,
+or make peace with, informed by the relationship graph. It is not a new
+subsystem; it is an extension of the existing intent contract.
+
+Extended intent contract:
+
+```json
+{
+  "five_year_goal": "Unify Britannia",
+  "focus": "Military",
+  "aggression": 8,
+  "secondary_goal": "Secure succession",
+  "negotiations": [
+    {"target": "King of France", "type": "alliance", "reason": "shared rival"},
+    {"target": "Duke of Aquitaine", "type": "marriage", "reason": "secure succession"}
+  ]
+}
+```
+
+Prompt additions: the relationship summary (Milestone 12) is fed to the LLM,
+which is instructed to propose negotiations consistent with the ruler's
+grudges, rivalries, and friendships.
+
+Out of scope (deferred to Phase 3 / game integration):
+
+- Multi-turn back-and-forth (offer / counter-offer / accept).
+- Evaluating incoming offers.
+- Actually executing a negotiation in CK3 (the project does not modify CK3).
+
+**Verify (when implemented):** the LLM emits a `negotiations` list whose
+targets are drawn from the relationship graph; valid JSON matching the
+contract.
+
+## Open design decision
+
+Where does the memory-type -> relationship mapping live?
+
+- **A) Configurable JSON file** (recommended) — fully mod-agnostic, but
+  requires maintaining a mapping file.
+- **B) Pass raw memories straight to the LLM** — zero mapping, maximally
+  mod-agnostic, but the structured graph still needs *some* mapping.
+
+Do **both**: the configurable mapping drives the structured graph, and the raw
+memories are also passed to the LLM so it can interpret anything the mapping
+does not cover.

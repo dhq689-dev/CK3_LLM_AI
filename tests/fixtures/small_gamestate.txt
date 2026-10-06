@@ -103,6 +103,7 @@ living={
 			}
  }
 		languages={ language_south_slavic }
+		memories={ 16778116 16778117 }
 	}
 	landed_data={
 		domain={ 0 2 }
@@ -187,6 +188,25 @@ active_wars={
 		attacker=33604054
 		defender=16800639
 	}
+}
+}
+}
+character_memory_manager={
+database={
+16778116={
+	type=became_friends
+	participants={
+		new_relation=47802
+	}
+	creation_date=883.9.1
+	end_date=1013.9.1
+}
+16778117={
+	type=offensive_war
+	participants={
+		other_party=33597185
+	}
+	creation_date=900.1.1
 }
 }
 }

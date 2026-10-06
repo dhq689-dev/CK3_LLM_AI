@@ -66,6 +66,13 @@ Phase 1 is complete. All milestones done:
 - [x] Milestone 8 — StrategicSummary builder + JSON output
 - [x] Milestone 9 — LLM strategist
 
+Phase 2 (memory, relationships, negotiation) is in progress:
+
+- [x] Milestone 10 — Memory extractor
+- [ ] Milestone 11 — Relationship graph
+- [ ] Milestone 12 — Relationship summary (LLM-facing)
+- [ ] Milestone 13 — Negotiation system (sketch)
+
 ## Setup
 
 ```bash

@@ -47,4 +47,11 @@ def test_column_zero_entries_not_indexed():
     assert "16801936" not in names
     assert "469762048" not in names
     # only the real top-level sections are present
-    assert names == {"meta_data", "landed_titles", "dynasties", "living", "wars"}
+    assert names == {
+        "meta_data",
+        "landed_titles",
+        "dynasties",
+        "living",
+        "wars",
+        "character_memory_manager",
+    }

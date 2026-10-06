@@ -63,6 +63,15 @@ class War:
     start_date: str = ""
 
 
+@dataclass
+class Memory:
+    id: int
+    type: str = ""
+    participants: dict[str, int] = field(default_factory=dict)
+    creation_date: str = ""
+    end_date: str = ""
+
+
 _RANK = {"b": 0, "c": 1, "d": 2, "k": 3, "e": 4}
 _TIER_RANK = {"barony": 0, "county": 1, "duchy": 2, "kingdom": 3, "empire": 4}
 
@@ -177,6 +186,20 @@ def extract_war(war_id: int, d: dict) -> War:
     )
 
 
+def extract_memory(mem_id: int, d: dict) -> Memory:
+    participants: dict[str, int] = {}
+    for k, v in (d.get("participants") or {}).items():
+        if isinstance(v, int):
+            participants[k] = v
+    return Memory(
+        id=mem_id,
+        type=d.get("type", ""),
+        participants=participants,
+        creation_date=d.get("creation_date", ""),
+        end_date=d.get("end_date", ""),
+    )
+
+
 class SaveReader:
     """Random-access reader over a save, streaming one entry at a time."""
 
@@ -209,7 +232,7 @@ class SaveReader:
                 if f.tell() > end:
                     break
                 if entry_key is None:
-                    m = _ENTRY_RE.match(line)
+                    m = _ENTRY_RE.match(line.lstrip())
                     if m and m.group(1).isdigit():
                         entry_key = m.group(1).decode("ascii", "replace")
                         entry_depth = depth
@@ -263,6 +286,10 @@ class SaveReader:
         for id_str, entry in (w.get("active_wars") or {}).items():
             if isinstance(entry, dict):
                 yield extract_war(int(id_str), entry)
+
+    def memories(self) -> Iterator[Memory]:
+        for key, d in self.stream_entries("character_memory_manager"):
+            yield extract_memory(int(key), d)
 
     def meta_date(self) -> str:
         """The save's current date (e.g. '918.11.5')."""
