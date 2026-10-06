@@ -62,3 +62,28 @@ def test_tokenize_basic():
     toks = list(tokenize('a={ 1 "two" }'))
     kinds = [t.kind for t in toks]
     assert kinds == ["BARE", "EQUALS", "LBRACE", "BARE", "STRING", "RBRACE"]
+
+
+def test_repeated_keys_collect_into_list():
+    # The save uses repeated `key=value` lines (e.g. multiple `spouse=`).
+    text = "family_data={ spouse=16793754 spouse=33571628 child={ 1 2 } }"
+    assert parse(text) == {
+        "family_data": {"spouse": [16793754, 33571628], "child": [1, 2]}
+    }
+
+
+def test_single_key_not_wrapped_in_list():
+    text = "family_data={ primary_spouse=17313 }"
+    assert parse(text) == {"family_data": {"primary_spouse": 17313}}
+
+
+def test_mixed_list_with_key_value_pairs():
+    # e.g. `duration={ 2 0=12877 1=3423 }`
+    text = "duration={ 2 0=12877 1=3423 }"
+    assert parse(text) == {"duration": [2, ("0", 12877), ("1", 3423)]}
+
+
+def test_typed_value_scalar_followed_by_list():
+    # e.g. `color=rgb { 250 180 0 }`
+    text = "color=rgb { 250 180 0 }"
+    assert parse(text) == {"color": ("rgb", [250, 180, 0])}

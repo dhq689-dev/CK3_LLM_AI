@@ -90,6 +90,11 @@ class Parser:
             self._next()
             return tok.value
         if tok.kind == BARE:
+            # typed value: scalar followed by a block/list, e.g. `rgb { 250 180 0 }`
+            t1 = self._peek(1)
+            if t1 is not None and t1.kind == LBRACE:
+                self._next()
+                return (tok.value, self._parse_brace())
             self._next()
             return _coerce(tok.value)
         raise ParseError(f"unexpected token '{tok.value}'", tok.pos)
@@ -109,19 +114,31 @@ class Parser:
                 items.append(self._parse_brace())
             self._expect_rbrace()
             return items
-        # block vs list: block if next token is followed by "="
+# block vs list: block if next token is followed by "="
         t1 = self._peek(1)
         if nxt.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
             d: dict[str, Any] = {}
             while self._peek() is not None and self._peek().kind != RBRACE:
                 k, v = self._parse_assignment()
-                d[k] = v
+                if k in d:
+                    if isinstance(d[k], list):
+                        d[k].append(v)
+                    else:
+                        d[k] = [d[k], v]
+                else:
+                    d[k] = v
             self._expect_rbrace()
             return d
-        # list of scalars
+# list of scalars (may contain key=value pairs, e.g. `{ 2 0=12877 }`)
         items = []
         while self._peek() is not None and self._peek().kind != RBRACE:
-            items.append(self._parse_value())
+            t = self._peek()
+            t1 = self._peek(1)
+            if t.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
+                k, v = self._parse_assignment()
+                items.append((k, v))
+            else:
+                items.append(self._parse_value())
         self._expect_rbrace()
         return items
 

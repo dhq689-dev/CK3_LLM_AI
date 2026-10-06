@@ -96,6 +96,17 @@ bool       := "yes" | "no" ;
    a block whose first token is `{`.
 6. **Dates** are `Y.M.D` with no leading zeros (`918.11.5`). Store as string;
    convert to a comparable integer `Y*10000 + M*100 + D` when needed.
+7. **Repeated keys** — a block may assign the same key more than once (e.g.
+   `spouse=16793754 spouse=33571628`). Collect repeated keys into a list.
+8. **Mixed lists** — a list may mix scalars and `key=value` pairs (e.g.
+   `duration={ 2 0=12877 1=3423 }`). Represent the pairs as `(key, value)`
+   tuples.
+9. **Typed values** — a scalar may be followed by a block/list (e.g.
+   `color=rgb { 250 180 0 }`). Represent as a `(scalar, value)` tuple.
+10. **Nested section wrapper** — `landed_titles` contains a nested
+    `landed_titles={...}` block (plus a `dynamic_templates` block); the actual
+    title entries sit at depth 2, not depth 1. Identify entries by numeric key
+    rather than a fixed depth.
 
 ### Recommended parser approach
 
