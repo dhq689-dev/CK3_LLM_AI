@@ -53,18 +53,18 @@ Paradox's scripting syntax. The parser:
 
 ## Status
 
-Phase 1 is in progress. Completed milestones:
+Phase 1 is complete. All milestones done:
 
 - [x] Milestone 0 — Project scaffolding
 - [x] Milestone 1 — Lexer + recursive-descent parser
 - [x] Milestone 2 — Section indexer
-- [ ] Milestone 3 — Character + Title extractors
-- [ ] Milestone 4 — Reference data loader
-- [ ] Milestone 5 — WorldGraph
-- [ ] Milestone 6 — RealmSnapshot + derived values
-- [ ] Milestone 7 — Significant-ruler detection
-- [ ] Milestone 8 — StrategicSummary builder + JSON output
-- [ ] Milestone 9 — LLM strategist
+- [x] Milestone 3 — Character + Title extractors
+- [x] Milestone 4 — Reference data loader
+- [x] Milestone 5 — WorldGraph
+- [x] Milestone 6 — RealmSnapshot + derived values
+- [x] Milestone 7 — Significant-ruler detection
+- [x] Milestone 8 — StrategicSummary builder + JSON output
+- [x] Milestone 9 — LLM strategist
 
 ## Setup
 
@@ -80,7 +80,14 @@ ck3_strategist/   # the parser package
   lexer.py        # byte-safe tokenizer
   parser.py       # recursive-descent parser
   indexer.py      # top-level section indexer
-reference_data/   # static ID→name lookup tables (traits, cultures, faiths, ...)
+  extract.py      # character/title/dynasty/war extractors
+  reference.py    # ID→name lookup tables (from the save)
+  graph.py        # WorldGraph (liege/vassal hierarchy)
+  snapshot.py     # RealmSnapshot + derived values
+  tiers.py        # significant-ruler detection
+  summary.py      # StrategicSummary builder
+  strategist.py   # LLM strategist (intent contract)
+reference_data/   # reserved for static lookup tables
 tests/            # unit tests + hand-written fixture
 sample_savedata/  # real saves (gitignored, large)
 ```
