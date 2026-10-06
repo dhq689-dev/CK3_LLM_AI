@@ -1,5 +1,7 @@
 """Tests for the LLM strategist layer."""
 
+import json
+
 import pytest
 
 from ck3_strategist.strategist import (
@@ -130,3 +132,63 @@ def test_strategist_gives_up_after_max_retries():
     strategist = Strategist(mock_llm, max_retries=1)
     with pytest.raises(IntentError):
         strategist.plan({"ruler_name": "Test"})
+
+
+def test_parse_intent_with_negotiations():
+    text = json.dumps(
+        {
+            "five_year_goal": "X",
+            "focus": "Diplomacy",
+            "aggression": 3,
+            "secondary_goal": "Y",
+            "negotiations": [
+                {"target_id": 42, "type": "alliance", "reason": "shared rival"},
+                {"target_id": 99, "type": "marriage", "reason": "succession"},
+            ],
+        }
+    )
+    intent = parse_intent(text)
+    assert [n.target_id for n in intent.negotiations] == [42, 99]
+    assert intent.negotiations[0].type == "alliance"
+
+
+def test_parse_intent_drops_invalid_negotiation_targets():
+    text = json.dumps(
+        {
+            "five_year_goal": "X",
+            "focus": "Diplomacy",
+            "aggression": 3,
+            "secondary_goal": "Y",
+            "negotiations": [
+                {"target_id": 42, "type": "alliance"},
+                {"target_id": 777, "type": "marriage"},
+            ],
+        }
+    )
+    intent = parse_intent(text, valid_targets={42})
+    assert [n.target_id for n in intent.negotiations] == [42]
+
+
+def test_strategist_validates_negotiation_targets():
+    def mock_llm(prompt: str) -> str:
+        return json.dumps(
+            {
+                "five_year_goal": "X",
+                "focus": "Diplomacy",
+                "aggression": 3,
+                "secondary_goal": "Y",
+                "negotiations": [
+                    {"target_id": 42, "type": "alliance", "reason": "friend"},
+                    {"target_id": 999, "type": "marriage", "reason": "ghost"},
+                ],
+            }
+        )
+
+    summary = {
+        "ruler_name": "X",
+        "relationships": [
+            {"ruler": "Y", "id": 42, "kind": "friend", "date": ""}
+        ],
+    }
+    intent = Strategist(mock_llm).plan(summary)
+    assert [n.target_id for n in intent.negotiations] == [42]

@@ -83,7 +83,11 @@ def build_summary(
         "economic_strength": snapshot.economic_bucket,
         "succession_stability": snapshot.succession_stability,
         "major_threats": [
-            {"ruler": t.ruler_name, "power_ratio": round(t.power_ratio, 2)}
+            {
+                "ruler": t.ruler_name,
+                "id": t.ruler_id,
+                "power_ratio": round(t.power_ratio, 2),
+            }
             for t in threats
         ],
         "major_opportunities": opportunities,
@@ -172,7 +176,9 @@ def _relationships_for(
     for r in rels[:max_items]:
         other = graph.characters.get(r.to_char)
         name = other.name if other else str(r.to_char)
-        items.append({"ruler": name, "kind": r.kind, "date": r.date})
+        items.append(
+            {"ruler": name, "id": r.to_char, "kind": r.kind, "date": r.date}
+        )
     return items
 
 

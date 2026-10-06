@@ -65,7 +65,10 @@ The LLM turns that into an *intent*:
   "five_year_goal": "Unify the Lingxi basin",
   "focus": "Military",
   "aggression": 7,
-  "secondary_goal": "Neutralise Xingfang before expanding"
+  "secondary_goal": "Neutralise Xingfang before expanding",
+  "negotiations": [
+    {"target_id": 16813541, "type": "alliance", "reason": "shared rival"}
+  ]
 }
 ```
 
@@ -103,7 +106,7 @@ Phase 2 (memory, relationships, negotiation) is in progress:
 - [x] Milestone 10 — Memory extractor
 - [x] Milestone 11 — Relationship graph
 - [x] Milestone 12 — Relationship summary (LLM-facing)
-- [ ] Milestone 13 — Negotiation system (sketch)
+- [x] Milestone 13 — Negotiation intents (sketch)
 
 ## Setup
 

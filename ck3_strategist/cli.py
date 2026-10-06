@@ -11,6 +11,7 @@ import json
 import os
 import tempfile
 import zipfile
+from dataclasses import asdict
 from pathlib import Path
 
 from .extract import SaveReader
@@ -133,6 +134,6 @@ def main(argv: list[str] | None = None) -> None:
         intents_file = out / "intents.json"
         with open(intents_file, "w", encoding="utf-8") as f:
             json.dump(
-                [i.__dict__ for i in intents], f, indent=2, ensure_ascii=False
+                [asdict(i) for i in intents], f, indent=2, ensure_ascii=False
             )
         print(f"wrote {len(intents)} intents to {intents_file}")

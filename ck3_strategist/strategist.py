@@ -15,13 +15,21 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 _FOCUS_VALUES = ("Military", "Diplomacy", "Stewardship", "Intrigue", "Learning")
+_NEGOTIATION_TYPES = ("alliance", "marriage", "peace")
 
 
 class IntentError(ValueError):
     """Raised when an LLM response cannot be parsed into a valid Intent."""
+
+
+@dataclass
+class Negotiation:
+    target_id: int
+    type: str
+    reason: str = ""
 
 
 @dataclass
@@ -30,6 +38,7 @@ class Intent:
     focus: str
     aggression: int
     secondary_goal: str
+    negotiations: list[Negotiation] = field(default_factory=list)
 
 
 def build_prompt(summary: dict, retry_error: str | None = None) -> str:
@@ -43,12 +52,12 @@ def build_prompt(summary: dict, retry_error: str | None = None) -> str:
         f"{k} {v}" for k, v in (summary.get("skills") or {}).items()
     )
     threats = ", ".join(
-        f"{t['ruler']} (power ratio {t['power_ratio']})"
+        f"{t['ruler']} [id={t.get('id')}] (power ratio {t['power_ratio']})"
         for t in (summary.get("major_threats") or [])
     ) or "none"
     opportunities = ", ".join(summary.get("major_opportunities") or []) or "none"
     relationships = ", ".join(
-        f"{r['ruler']} ({r['kind']})"
+        f"{r['ruler']} [id={r.get('id')}] ({r['kind']})"
         for r in (summary.get("relationships") or [])
     ) or "none"
 
@@ -70,12 +79,18 @@ Threats: {threats}
 Opportunities: {opportunities}
 Relationships: {relationships}
 
+You may also propose negotiations (alliances, marriages, peace) with the
+characters above. Use their numeric id (from [id=...]) as the target.
+
 Respond with ONLY a JSON object in this exact format:
 {{
   "five_year_goal": "<a concrete long-term ambition>",
   "focus": "<one of: Military, Diplomacy, Stewardship, Intrigue, Learning>",
   "aggression": <integer 0-10>,
-  "secondary_goal": "<a supporting short-term goal>"
+  "secondary_goal": "<a supporting short-term goal>",
+  "negotiations": [
+    {{"target_id": <id>, "type": "<alliance|marriage|peace>", "reason": "<why>"}}
+  ]
 }}"""
     if retry_error:
         prompt += (
@@ -85,8 +100,11 @@ Respond with ONLY a JSON object in this exact format:
     return prompt
 
 
-def parse_intent(text: str) -> Intent:
+def parse_intent(text: str, valid_targets: set[int] | None = None) -> Intent:
     """Extract and validate the intent JSON from an LLM response.
+
+    ``valid_targets`` (if given) restricts which character IDs a negotiation
+    may target.
 
     Raises :class:`IntentError` on any parse or validation failure.
     """
@@ -121,13 +139,38 @@ def parse_intent(text: str) -> Intent:
         )
 
     aggression = _coerce_aggression(data.get("aggression", 0))
+    negotiations = _parse_negotiations(data.get("negotiations"), valid_targets)
 
     return Intent(
         five_year_goal=goal,
         focus=focus,
         aggression=aggression,
         secondary_goal=secondary,
+        negotiations=negotiations,
     )
+
+
+def _parse_negotiations(raw, valid_targets: set[int] | None) -> list[Negotiation]:
+    """Parse the optional ``negotiations`` list, dropping invalid targets."""
+    if not isinstance(raw, list):
+        return []
+    out: list[Negotiation] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        target_id = item.get("target_id")
+        if not isinstance(target_id, int):
+            continue
+        if valid_targets is not None and target_id not in valid_targets:
+            continue  # target not in the graph -> drop
+        out.append(
+            Negotiation(
+                target_id=target_id,
+                type=str(item.get("type", "")).strip(),
+                reason=str(item.get("reason", "")).strip(),
+            )
+        )
+    return out
 
 
 def _coerce_aggression(raw) -> int:
@@ -143,6 +186,18 @@ def _coerce_aggression(raw) -> int:
     return max(0, min(10, value))
 
 
+def _valid_targets(summary: dict) -> set[int]:
+    """Character ids the LLM may negotiate with (from relationships + threats)."""
+    targets: set[int] = set()
+    for r in summary.get("relationships") or []:
+        if isinstance(r.get("id"), int):
+            targets.add(r["id"])
+    for t in summary.get("major_threats") or []:
+        if isinstance(t.get("id"), int):
+            targets.add(t["id"])
+    return targets
+
+
 class Strategist:
     def __init__(self, llm_call: Callable[[str], str], max_retries: int = 2):
         self._llm_call = llm_call
@@ -150,13 +205,14 @@ class Strategist:
 
     def plan(self, summary: dict) -> Intent:
         """Plan for one ruler, retrying with error feedback on bad output."""
+        valid_targets = _valid_targets(summary)
         retry_error: str | None = None
         last_error: Exception | None = None
         for _ in range(self._max_retries + 1):
             prompt = build_prompt(summary, retry_error)
             response = self._llm_call(prompt)
             try:
-                return parse_intent(response)
+                return parse_intent(response, valid_targets)
             except IntentError as e:
                 last_error = e
                 retry_error = str(e)
