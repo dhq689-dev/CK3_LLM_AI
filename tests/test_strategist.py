@@ -1,6 +1,14 @@
 """Tests for the LLM strategist layer."""
 
-from ck3_strategist.strategist import Intent, Strategist, build_prompt, parse_intent
+import pytest
+
+from ck3_strategist.strategist import (
+    Intent,
+    IntentError,
+    Strategist,
+    build_prompt,
+    parse_intent,
+)
 
 
 def test_build_prompt_contains_summary_fields():
@@ -45,16 +53,40 @@ def test_parse_intent_with_markdown_fence():
 
 def test_parse_intent_clamps_aggression():
     text = '{"five_year_goal": "x", "focus": "Military", "aggression": 99, "secondary_goal": "y"}'
-    intent = parse_intent(text)
-    assert intent.aggression == 10
+    assert parse_intent(text).aggression == 10
+
+
+def test_parse_intent_normalises_focus_case():
+    text = '{"five_year_goal": "x", "focus": "military", "aggression": 5, "secondary_goal": "y"}'
+    assert parse_intent(text).focus == "Military"
 
 
 def test_parse_intent_rejects_no_json():
-    try:
+    with pytest.raises(IntentError):
         parse_intent("no json here")
-        assert False, "should have raised"
-    except ValueError:
-        pass
+
+
+def test_parse_intent_rejects_invalid_focus():
+    text = '{"five_year_goal": "x", "focus": "Conquest", "aggression": 5, "secondary_goal": "y"}'
+    with pytest.raises(IntentError):
+        parse_intent(text)
+
+
+def test_parse_intent_rejects_non_numeric_aggression():
+    text = '{"five_year_goal": "x", "focus": "Military", "aggression": "high", "secondary_goal": "y"}'
+    with pytest.raises(IntentError):
+        parse_intent(text)
+
+
+def test_parse_intent_accepts_numeric_string_aggression():
+    text = '{"five_year_goal": "x", "focus": "Military", "aggression": "7", "secondary_goal": "y"}'
+    assert parse_intent(text).aggression == 7
+
+
+def test_parse_intent_rejects_empty_goal():
+    text = '{"five_year_goal": "", "focus": "Military", "aggression": 5, "secondary_goal": "y"}'
+    with pytest.raises(IntentError):
+        parse_intent(text)
 
 
 def test_strategist_with_mock_llm():
@@ -66,3 +98,35 @@ def test_strategist_with_mock_llm():
     assert isinstance(intent, Intent)
     assert intent.five_year_goal == "Conquer"
     assert intent.aggression == 7
+
+
+def test_strategist_retries_on_bad_output():
+    responses = iter(
+        [
+            "not json at all",
+            '{"five_year_goal": "x", "focus": "Bogus", "aggression": 5, "secondary_goal": "y"}',
+            '{"five_year_goal": "Recovered", "focus": "Intrigue", "aggression": 4, "secondary_goal": "Spy"}',
+        ]
+    )
+    calls = []
+
+    def mock_llm(prompt: str) -> str:
+        calls.append(prompt)
+        return next(responses)
+
+    strategist = Strategist(mock_llm, max_retries=2)
+    intent = strategist.plan({"ruler_name": "Test"})
+    assert intent.five_year_goal == "Recovered"
+    assert intent.focus == "Intrigue"
+    assert len(calls) == 3
+    # the retry prompt carries the error feedback
+    assert "previous response was invalid" in calls[1]
+
+
+def test_strategist_gives_up_after_max_retries():
+    def mock_llm(prompt: str) -> str:
+        return "still not json"
+
+    strategist = Strategist(mock_llm, max_retries=1)
+    with pytest.raises(IntentError):
+        strategist.plan({"ruler_name": "Test"})
