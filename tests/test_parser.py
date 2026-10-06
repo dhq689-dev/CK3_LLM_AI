@@ -87,3 +87,9 @@ def test_typed_value_scalar_followed_by_list():
     # e.g. `color=rgb { 250 180 0 }`
     text = "color=rgb { 250 180 0 }"
     assert parse(text) == {"color": ("rgb", [250, 180, 0])}
+
+
+def test_repeated_key_with_list_values():
+    # `a={ x={1 2} x={3 4} }` should give [[1,2],[3,4]], not [1,2,[3,4]]
+    text = "a={ x={1 2} x={3 4} }"
+    assert parse(text) == {"a": {"x": [[1, 2], [3, 4]]}}

@@ -64,7 +64,8 @@ def build_summary(
         "rank": snapshot.rank,
         "age": compute_age(char.birth if char else "", current_date),
         "traits": [
-            reference.trait_name(t) for t in (char.traits if char else [])
+            reference.trait_name(t) or f"trait_{t}"
+            for t in (char.traits if char else [])
         ],
         "skills": skills,
         "realm_size": _realm_size(len(realm_titles)),

@@ -49,3 +49,18 @@ def test_build_summaries_token_budget():
 
 def test_estimate_tokens():
     assert estimate_tokens({"a": "b"}) >= 0
+
+
+def test_unknown_trait_does_not_crash():
+    # Unknown trait IDs (mods/DLC) must not crash the summary/prompt.
+    from ck3_strategist.reference import ReferenceData
+    from ck3_strategist.strategist import build_prompt
+
+    summary = {
+        "ruler_name": "X", "title": "k_x", "rank": "king", "age": 30,
+        "traits": ["unknown_trait_999"], "skills": {}, "realm_size": "small",
+        "military_strength": "weak", "economic_strength": "weak",
+        "succession_stability": "stable", "major_threats": [],
+        "major_opportunities": [], "active_wars": 0, "claims_available": 0,
+    }
+    build_prompt(summary)  # must not raise

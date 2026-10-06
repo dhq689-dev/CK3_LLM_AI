@@ -67,7 +67,7 @@ class War:
 class Memory:
     id: int
     type: str = ""
-    participants: dict[str, int] = field(default_factory=dict)
+    participants: dict[str, list[int]] = field(default_factory=dict)
     creation_date: str = ""
     end_date: str = ""
 
@@ -187,10 +187,11 @@ def extract_war(war_id: int, d: dict) -> War:
 
 
 def extract_memory(mem_id: int, d: dict) -> Memory:
-    participants: dict[str, int] = {}
+    participants: dict[str, list[int]] = {}
     for k, v in (d.get("participants") or {}).items():
-        if isinstance(v, int):
-            participants[k] = v
+        ints = [x for x in _as_list(v) if isinstance(x, int)]
+        if ints:
+            participants[k] = ints
     return Memory(
         id=mem_id,
         type=d.get("type", ""),

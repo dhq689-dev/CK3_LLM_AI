@@ -118,13 +118,15 @@ class Parser:
         t1 = self._peek(1)
         if nxt.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
             d: dict[str, Any] = {}
+            promoted: set[str] = set()
             while self._peek() is not None and self._peek().kind != RBRACE:
                 k, v = self._parse_assignment()
                 if k in d:
-                    if isinstance(d[k], list):
+                    if k in promoted:
                         d[k].append(v)
                     else:
                         d[k] = [d[k], v]
+                        promoted.add(k)
                 else:
                     d[k] = v
             self._expect_rbrace()
