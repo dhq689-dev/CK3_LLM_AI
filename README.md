@@ -35,7 +35,13 @@ CK3 Executes Decisions
 
 The parser is LLM-agnostic: it converts a save into a `StrategicSummary` JSON,
 which is the only structure sent to the LLM. The LLM issues *intent*
-(`five_year_goal`, `focus`, `aggression`, `secondary_goal`), never raw actions.
+(`five_year_goal`, `focus`, `aggression`, `secondary_goal`, `negotiations`),
+never raw actions.
+
+> **Status of the last two boxes:** the repository currently stops at
+> "LLM Strategist → 5-Year Strategic Plan". The **AI Weight/Modifier System**
+> and **CK3 Executes Decisions** stages are *not implemented* — applying the
+> intent back into CK3 is the hardest part of the project and is still to do.
 
 ## Example
 
