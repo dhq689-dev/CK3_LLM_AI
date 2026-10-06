@@ -13,5 +13,12 @@ These mappings are **extracted from the save itself** at runtime (see
 This keeps the parser self-contained and version-proof (the mappings live in
 the save, so they never drift from the game data).
 
-This directory is reserved for any future static tables (e.g. title-key →
+## Static files
+
+- `relationships.json` — configurable `memory_type -> {participant_key -> kind}`
+  mapping used by the relationship graph (`ck3_strategist/relationships.py`).
+  Edit it to teach the graph about new/modded memory types; unmapped types are
+  ignored by the graph but still passed to the LLM as raw memories.
+
+This directory is also reserved for any future static tables (e.g. title-key →
 display-name localization) that cannot be sourced from the save.

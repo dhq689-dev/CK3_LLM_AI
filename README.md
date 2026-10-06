@@ -101,7 +101,7 @@ Phase 1 is complete. All milestones done:
 Phase 2 (memory, relationships, negotiation) is in progress:
 
 - [x] Milestone 10 — Memory extractor
-- [ ] Milestone 11 — Relationship graph
+- [x] Milestone 11 — Relationship graph
 - [ ] Milestone 12 — Relationship summary (LLM-facing)
 - [ ] Milestone 13 — Negotiation system (sketch)
 
@@ -142,9 +142,10 @@ ck3_strategist/   # the parser package
   snapshot.py     # RealmSnapshot + derived values
   tiers.py        # significant-ruler detection
   summary.py      # StrategicSummary builder
+  relationships.py # relationship graph (from memories)
   strategist.py   # LLM strategist (intent contract)
   cli.py          # command-line entry point
-reference_data/   # reserved for static lookup tables
+reference_data/   # static lookup tables (relationships.json)
 tests/            # unit tests + hand-written fixture
 sample_savedata/  # real saves (gitignored, large)
 ```
