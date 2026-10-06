@@ -24,7 +24,7 @@ class ReferenceData:
     houses: dict[int, str] = field(default_factory=dict)
 
     @classmethod
-    def from_save(cls, reader) -> "ReferenceData":
+    def from_save(cls, reader) -> ReferenceData:
         traits = {}
         lookup = reader.read_section("traits_lookup")
         if isinstance(lookup, list):

@@ -32,7 +32,7 @@ class WorldGraph:
                 self._titles_by_holder.setdefault(t.holder, []).append(t.id)
 
     @classmethod
-    def from_save(cls, reader: SaveReader) -> "WorldGraph":
+    def from_save(cls, reader: SaveReader) -> WorldGraph:
         characters = {c.id: c for c in reader.characters()}
         titles = {t.id: t for t in reader.titles()}
         dynasties = {d.id: d for d in reader.dynasties()}

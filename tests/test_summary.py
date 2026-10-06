@@ -3,8 +3,13 @@
 from ck3_strategist.extract import SaveReader
 from ck3_strategist.graph import WorldGraph
 from ck3_strategist.reference import ReferenceData
-from ck3_strategist.snapshot import build_snapshots, bucket_strength, compute_threats
-from ck3_strategist.summary import build_summary, build_summaries, compute_age, estimate_tokens
+from ck3_strategist.snapshot import bucket_strength, build_snapshots, compute_threats
+from ck3_strategist.summary import (
+    build_summaries,
+    build_summary,
+    compute_age,
+    estimate_tokens,
+)
 
 FIXTURE = "tests/fixtures/small_gamestate.txt"
 
@@ -53,7 +58,6 @@ def test_estimate_tokens():
 
 def test_unknown_trait_does_not_crash():
     # Unknown trait IDs (mods/DLC) must not crash the summary/prompt.
-    from ck3_strategist.reference import ReferenceData
     from ck3_strategist.strategist import build_prompt
 
     summary = {

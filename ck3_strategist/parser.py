@@ -110,16 +110,16 @@ class Parser:
         if nxt.kind == LBRACE:
             # list of anonymous blocks
             items: list[Any] = []
-            while self._peek() is not None and self._peek().kind == LBRACE:
+            while (tok := self._peek()) is not None and tok.kind == LBRACE:
                 items.append(self._parse_brace())
             self._expect_rbrace()
             return items
-# block vs list: block if next token is followed by "="
+        # block vs list: block if next token is followed by "="
         t1 = self._peek(1)
         if nxt.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
             d: dict[str, Any] = {}
             promoted: set[str] = set()
-            while self._peek() is not None and self._peek().kind != RBRACE:
+            while (tok := self._peek()) is not None and tok.kind != RBRACE:
                 k, v = self._parse_assignment()
                 if k in d:
                     if k in promoted:
@@ -131,12 +131,11 @@ class Parser:
                     d[k] = v
             self._expect_rbrace()
             return d
-# list of scalars (may contain key=value pairs, e.g. `{ 2 0=12877 }`)
+        # list of scalars (may contain key=value pairs, e.g. `{ 2 0=12877 }`)
         items = []
-        while self._peek() is not None and self._peek().kind != RBRACE:
-            t = self._peek()
+        while (tok := self._peek()) is not None and tok.kind != RBRACE:
             t1 = self._peek(1)
-            if t.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
+            if tok.kind in (BARE, STRING) and t1 is not None and t1.kind == EQUALS:
                 k, v = self._parse_assignment()
                 items.append((k, v))
             else:

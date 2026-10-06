@@ -16,7 +16,7 @@ from pathlib import Path
 from .extract import SaveReader
 from .graph import WorldGraph
 from .reference import ReferenceData
-from .snapshot import build_snapshots, bucket_economic, bucket_strength
+from .snapshot import bucket_economic, bucket_strength, build_snapshots
 from .summary import build_summaries
 from .tiers import TIER_1, TIER_2, classify_rulers
 

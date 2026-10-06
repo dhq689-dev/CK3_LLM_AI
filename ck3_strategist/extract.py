@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Iterator
 
 from .indexer import SectionIndex, _brace_delta
 from .parser import parse
@@ -216,7 +216,7 @@ class SaveReader:
         """Run an extractor, counting and skipping any entry that raises."""
         try:
             return extractor(int(key), d)
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberately skip any bad entry
             self.errors += 1
             return None
 
@@ -294,8 +294,13 @@ class SaveReader:
         text = data.decode("utf-8", "replace")
         return parse(text)[name]
 
+    def _read_dict(self, name: str) -> dict:
+        """Read a section, returning ``{}`` unless it parsed to a dict."""
+        data = self.read_section(name)
+        return data if isinstance(data, dict) else {}
+
     def dynasties(self) -> Iterator[Dynasty]:
-        dyn = self.read_section("dynasties") or {}
+        dyn = self._read_dict("dynasties")
         for id_str, entry in (dyn.get("dynasties") or {}).items():
             if isinstance(entry, dict):
                 obj = self._extract(extract_dynasty, id_str, entry)
@@ -303,7 +308,7 @@ class SaveReader:
                     yield obj
 
     def wars(self) -> Iterator[War]:
-        w = self.read_section("wars") or {}
+        w = self._read_dict("wars")
         for id_str, entry in (w.get("active_wars") or {}).items():
             if isinstance(entry, dict):
                 obj = self._extract(extract_war, id_str, entry)
@@ -318,12 +323,11 @@ class SaveReader:
 
     def meta_date(self) -> str:
         """The save's current date (e.g. '918.11.5')."""
-        md = self.read_section("meta_data") or {}
-        return md.get("meta_date", "")
+        return self._read_dict("meta_data").get("meta_date", "")
 
     def dynamic_templates(self) -> dict[str, str]:
         """Map modded title keys (e.g. ``x_mc_0``) to their tier."""
-        lt = self.read_section("landed_titles") or {}
+        lt = self._read_dict("landed_titles")
         mapping: dict[str, str] = {}
         for entry in lt.get("dynamic_templates") or []:
             if isinstance(entry, dict) and "key" in entry and "tier" in entry:

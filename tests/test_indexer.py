@@ -18,7 +18,7 @@ def test_index_fixture(tmp_path):
     # line numbers are positive and increasing
     lines = [idx.get(n).line for n in
              ("meta_data", "landed_titles", "dynasties", "living", "wars")]
-    assert all(l > 0 for l in lines)
+    assert all(ln > 0 for ln in lines)
     assert lines == sorted(lines)
 
 

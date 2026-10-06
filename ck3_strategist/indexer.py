@@ -28,14 +28,12 @@ class SectionIndex:
         self._ordered = sorted(sections, key=lambda s: s.byte_offset)
 
     @classmethod
-    def build(cls, path: str) -> "SectionIndex":
+    def build(cls, path: str) -> SectionIndex:
         sections: list[Section] = []
         depth = 0
         with open(path, "rb") as f:
             offset = 0
-            line_no = 0
-            for line in f:
-                line_no += 1
+            for line_no, line in enumerate(f, start=1):
                 if depth == 0 and line and line[0] in _FIRST_BYTE_OK:
                     m = _SECTION_RE.match(line)
                     if m:

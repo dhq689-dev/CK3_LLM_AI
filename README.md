@@ -37,6 +37,38 @@ The parser is LLM-agnostic: it converts a save into a `StrategicSummary` JSON,
 which is the only structure sent to the LLM. The LLM issues *intent*
 (`five_year_goal`, `focus`, `aggression`, `secondary_goal`), never raw actions.
 
+## Example
+
+A `StrategicSummary` for one ruler (abridged):
+
+```json
+{
+  "ruler_name": "Shiyan",
+  "title": "k_lingxi",
+  "rank": "king",
+  "age": 51,
+  "traits": ["content", "vengeful", "chaste", "education_diplomacy_3"],
+  "skills": {"diplomacy": 6, "martial": 3, "intrigue": 7, "learning": 7},
+  "realm_size": "large",
+  "military_strength": "strong",
+  "economic_strength": "strong",
+  "succession_stability": "stable",
+  "major_threats": [{"ruler": "Xingfang", "power_ratio": 0.71}],
+  "active_wars": 1
+}
+```
+
+The LLM turns that into an *intent*:
+
+```json
+{
+  "five_year_goal": "Unify the Lingxi basin",
+  "focus": "Military",
+  "aggression": 7,
+  "secondary_goal": "Neutralise Xingfang before expanding"
+}
+```
+
 ## How it works
 
 A `.ck3` save is a ZIP archive containing a plaintext `gamestate` file in
@@ -122,4 +154,17 @@ sample_savedata/  # real saves (gitignored, large)
 - `agents.md` — project vision, data model, and implementation plan.
 - `parser_implementation.md` — authoritative parser spec (grammar, field map,
   derived-value logic, version-proofing).
-- `review_notes.md` / `review_notes_v2.md` — design reviews and recommendations.
+- `docs/review_notes.md` / `docs/review_notes_v2.md` — design reviews and
+  recommendations.
+
+## Development
+
+```bash
+ruff check .   # lint
+mypy           # type-check
+pytest         # test
+```
+
+## License
+
+MIT — see `LICENSE`.

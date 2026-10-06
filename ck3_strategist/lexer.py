@@ -7,8 +7,8 @@ string and yields a flat token stream.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator
 
 # Token kinds
 LBRACE = "LBRACE"

@@ -3,10 +3,9 @@
 from ck3_strategist.extract import SaveReader
 from ck3_strategist.graph import WorldGraph
 from ck3_strategist.snapshot import (
+    bucket_strength,
     build_snapshot,
     build_snapshots,
-    bucket_economic,
-    bucket_strength,
     compute_threats,
 )
 

@@ -51,8 +51,7 @@ def test_main_writes_output(tmp_path):
 
 
 def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
-    import ck3_strategist.cli as cli
-    from ck3_strategist.strategist import ollama_call
+    from ck3_strategist import cli
 
     def fake_ollama(model="llama3", host="http://localhost:11434"):
         return lambda prompt: '{"five_year_goal": "X", "focus": "Diplomacy", "aggression": 2, "secondary_goal": "Y"}'

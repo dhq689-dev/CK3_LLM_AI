@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 _FOCUS_VALUES = ("Military", "Diplomacy", "Stewardship", "Intrigue", "Learning")
 
@@ -134,7 +134,7 @@ def _coerce_aggression(raw) -> int:
         except (TypeError, ValueError):
             raise IntentError(
                 f"invalid aggression {raw!r}; expected an integer 0-10"
-            )
+            ) from None
     return max(0, min(10, value))
 
 
