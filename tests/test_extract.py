@@ -91,3 +91,65 @@ def test_save_reader_titles():
     assert titles[0].key == "d_swabia"
     assert titles[1].de_facto_liege == 0
     assert titles[2].key == "k_france"
+
+
+def test_stream_entries_ignores_nested_numeric_blocks(tmp_path):
+    # a numeric-keyed block nested inside an entry must not be yielded
+    content = (
+        "living={\n"
+        "16801936={\n"
+        'first_name="Test"\n'
+        "nested={\n"
+        "999={\n"
+        "key=x\n"
+        "}\n"
+        "}\n"
+        "}\n"
+        "}\n"
+    )
+    p = tmp_path / "save.txt"
+    p.write_text(content)
+    reader = SaveReader(str(p))
+    entries = list(reader.stream_entries("living"))
+    assert [k for k, _ in entries] == ["16801936"]
+
+
+def test_stream_entries_indented_entries(tmp_path):
+    # memory-style entries are indented inside a wrapper block
+    content = (
+        "character_memory_manager={\n"
+        "database={\n"
+        "111={\n"
+        "type=became_friends\n"
+        "}\n"
+        "222={\n"
+        "type=offensive_war\n"
+        "}\n"
+        "}\n"
+        "}\n"
+    )
+    p = tmp_path / "save.txt"
+    p.write_text(content)
+    reader = SaveReader(str(p))
+    entries = list(reader.stream_entries("character_memory_manager"))
+    assert [k for k, _ in entries] == ["111", "222"]
+
+
+def test_extract_error_is_counted_and_skipped(tmp_path):
+    content = "living={\n1={\nfirst_name=\"A\"\n}\n2={\nfirst_name=\"B\"\n}\n}\n"
+    p = tmp_path / "save.txt"
+    p.write_text(content)
+    reader = SaveReader(str(p))
+
+    def flaky_extractor(cid: int, d: dict):
+        if cid == 1:
+            raise ValueError("boom")
+        return cid
+
+    results = [
+        obj
+        for key, d in reader.stream_entries("living")
+        if (obj := reader._extract(flaky_extractor, key, d)) is not None
+    ]
+    assert results == [2]
+    assert reader.errors == 1

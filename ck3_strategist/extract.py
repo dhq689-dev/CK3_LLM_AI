@@ -15,7 +15,7 @@ from typing import Iterator
 from .indexer import SectionIndex, _brace_delta
 from .parser import parse
 
-_ENTRY_RE = re.compile(rb"([A-Za-z0-9_]+)=\s*\{")
+_ENTRY_RE = re.compile(rb"\s*(\d+)=\s*\{")
 
 
 @dataclass
@@ -188,10 +188,12 @@ def extract_war(war_id: int, d: dict) -> War:
 
 def extract_memory(mem_id: int, d: dict) -> Memory:
     participants: dict[str, list[int]] = {}
-    for k, v in (d.get("participants") or {}).items():
-        ints = [x for x in _as_list(v) if isinstance(x, int)]
-        if ints:
-            participants[k] = ints
+    raw = d.get("participants")
+    if isinstance(raw, dict):
+        for k, v in raw.items():
+            ints = [x for x in _as_list(v) if isinstance(x, int)]
+            if ints:
+                participants[k] = ints
     return Memory(
         id=mem_id,
         type=d.get("type", ""),
@@ -208,13 +210,24 @@ class SaveReader:
         self.path = path
         self.index = SectionIndex.build(path)
         self.file_size = os.path.getsize(path)
+        self.errors = 0  # entries skipped due to extraction errors
+
+    def _extract(self, extractor, key: str, d: dict):
+        """Run an extractor, counting and skipping any entry that raises."""
+        try:
+            return extractor(int(key), d)
+        except Exception:
+            self.errors += 1
+            return None
 
     def stream_entries(self, section_name: str) -> Iterator[tuple[str, dict]]:
         """Yield ``(key, dict)`` for each entry in a top-level section.
 
         Entries are identified by a numeric key (character/title/memory IDs)
-        at column 0. Sub-blocks such as ``dynamic_templates`` or the nested
-        ``landed_titles`` wrapper are skipped.
+        at the section's entry depth, which is auto-detected from the first
+        numeric key found. Sub-blocks such as ``dynamic_templates`` or the
+        ``database`` wrapper are skipped, and numeric-keyed blocks nested
+        deeper than the entry depth are ignored.
         """
         section = self.index.get(section_name)
         if section is None:
@@ -233,11 +246,13 @@ class SaveReader:
                 if f.tell() > end:
                     break
                 if entry_key is None:
-                    m = _ENTRY_RE.match(line.lstrip())
-                    if m and m.group(1).isdigit():
-                        entry_key = m.group(1).decode("ascii", "replace")
-                        entry_depth = depth
-                        entry_lines = [line]
+                    m = _ENTRY_RE.match(line)
+                    if m:
+                        if entry_depth is None or depth < entry_depth:
+                            entry_depth = depth
+                        if depth == entry_depth:
+                            entry_key = m.group(1).decode("ascii", "replace")
+                            entry_lines = [line]
                     depth += _brace_delta(line)
                     if depth <= 0:
                         break
@@ -248,16 +263,19 @@ class SaveReader:
                         text = b"".join(entry_lines).decode("utf-8", "replace")
                         yield entry_key, parse(text)[entry_key]
                         entry_key = None
-                        entry_depth = None
                         entry_lines = []
 
     def characters(self) -> Iterator[Character]:
         for key, d in self.stream_entries("living"):
-            yield extract_character(int(key), d)
+            obj = self._extract(extract_character, key, d)
+            if obj is not None:
+                yield obj
 
     def titles(self) -> Iterator[Title]:
         for key, d in self.stream_entries("landed_titles"):
-            yield extract_title(int(key), d)
+            obj = self._extract(extract_title, key, d)
+            if obj is not None:
+                yield obj
 
     def read_section(self, name: str) -> dict | list | None:
         """Read and parse a whole section into a nested structure.
@@ -280,17 +298,23 @@ class SaveReader:
         dyn = self.read_section("dynasties") or {}
         for id_str, entry in (dyn.get("dynasties") or {}).items():
             if isinstance(entry, dict):
-                yield extract_dynasty(int(id_str), entry)
+                obj = self._extract(extract_dynasty, id_str, entry)
+                if obj is not None:
+                    yield obj
 
     def wars(self) -> Iterator[War]:
         w = self.read_section("wars") or {}
         for id_str, entry in (w.get("active_wars") or {}).items():
             if isinstance(entry, dict):
-                yield extract_war(int(id_str), entry)
+                obj = self._extract(extract_war, id_str, entry)
+                if obj is not None:
+                    yield obj
 
     def memories(self) -> Iterator[Memory]:
         for key, d in self.stream_entries("character_memory_manager"):
-            yield extract_memory(int(key), d)
+            obj = self._extract(extract_memory, key, d)
+            if obj is not None:
+                yield obj
 
     def meta_date(self) -> str:
         """The save's current date (e.g. '918.11.5')."""
