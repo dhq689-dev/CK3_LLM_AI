@@ -866,3 +866,115 @@ Where does the memory-type -> relationship mapping live?
 Do **both**: the configurable mapping drives the structured graph, and the raw
 memories are also passed to the LLM so it can interpret anything the mapping
 does not cover.
+
+---
+
+# Phase 3 Plan — Injecting intent into CK3
+
+Phase 3 turns the LLM's intent into actual CK3 AI behaviour. It is the hardest
+part of the project: the LLM brain exists, but nothing yet *applies* its plan
+to the game.
+
+## The core constraint
+
+CK3 takes no outside input while running. It cannot read files at runtime. So a
+plan must be **baked into script** and delivered either at load time (a
+generated mod) or through the console. This makes the loop **turn-based**:
+save → parse → plan → write → restart → load.
+
+## Design principles
+
+1. **Soft steering + hard actions.** Soft modifiers nudge the AI; hard actions
+   make specific decisions happen. Neither alone is sufficient.
+2. **Key plans on titles, not character IDs.** `title:k_france.holder`
+   survives succession; character IDs do not. Use character IDs only as a
+   fallback for landless targets.
+3. **Constrained choices.** Precompute a per-ruler *legal-move menu* and make
+   the LLM choose from it (schema-validated). Never let it invent targets.
+4. **Close the loop through the save.** Injected effects set variables (plan
+   ID, start date); the next parse reads them back so the LLM has memory of its
+   own plans and their outcomes.
+5. **Limit hard actions per cycle** (one or two per ruler) so rulers still feel
+   like AI and behaviour cannot run away.
+6. **Mod/version/LLM agnostic.** Modifier names come from a `script_docs` dump
+   (a data file, like `reference_data/`); the LLM stays a pluggable callable.
+
+## Two-layer translation
+
+**Soft steering** (continuous, unreliable alone):
+
+- Character modifiers carrying AI personality dials (`ai_boldness`,
+  `ai_energy`, `ai_greed`, `ai_vengefulness`, ...) and war dials
+  (`ai_war_chance`, `ai_war_cooldown`, ...).
+- Pre-define tiers (`ck3llm_aggressive_1` .. `_5`) in a hand-written static mod;
+  Python emits only the tier. Apply with `years = 5` so plans self-expire.
+
+**Hard actions** (discrete, deterministic — the game's own effects):
+
+- `start_war`, `add_opinion` (custom modifier), `add_hook`, `create_alliance`,
+  `add_truce`, `set_designated_heir`, `add_pressed_claim`.
+- Each guarded by in-game triggers so illegal moves silently no-op.
+
+## Delivery routes
+
+| Route | Restart? | Robustness | Notes |
+|---|---|---|---|
+| Generated mod file | Yes | High | Cleanest. Static `on_action` calls a Python-written scripted effect. |
+| Console `effect`/`run` | No | Medium | Near-live; non-Ironman only; **verify `run <file>` behaviour**. |
+| Edit gamestate + rezip | Reload | Low | Format-fragile; avoid unless the others fail. |
+
+Recommended: **generated mod first** (deterministic, debuggable), console later
+if a live loop is wanted.
+
+## Cadence
+
+- Plans are stamped with a **plan ID + start date** as character variables.
+- Recompute roughly **every 5 in-game years**, gated on the plan start date
+  (not on the autosave interval), so cadence is self-correcting.
+- A **save watcher** can trigger on any save (manual or auto). Application
+  still needs a reload on the generated-mod route.
+
+## Feedback loop
+
+The injected effect writes `ck3llm_plan_id` and a start date. The next parse
+reads them, so the briefing can say "you have been pursuing this plan since
+year X" — giving the LLM memory of its own intent and its results.
+
+## Milestones
+
+- **Milestone 14 — Legal-move menu builder.** Per ruler, compute valid war
+  targets (claims/CBs), plausible allies, peace options, and truces.
+- **Milestone 15 — Intent contract revision.** Emit title keys (landless
+  fallback) and constrained choices drawn from the menu.
+- **Milestone 16 — Translation layer.** Intent → modifier tier + guarded hard
+  actions, targeting `script_docs`-verified names.
+- **Milestone 17 — Static mod + generated script.** Hand-written modifier
+  definitions + `on_action`; Python writes the per-cycle `scripted_effect`.
+- **Milestone 18 — Feedback loop.** Read plan variables back into the briefing.
+- **Milestone 19 — Cadence & save watcher.** 5-year gating and save detection.
+
+## Open items to verify (before building on them)
+
+- **Ironman saves** — confirm they are unparseable (this is a foundational
+  constraint; if only checksummed, there may be a path).
+- **Modifier names** — run `script_docs` once and target real names for the
+  game version.
+- **Console `run <file>`** — confirm it reads from a user `run/` folder.
+- **`?=` safe-scope and `yearly_global_pulse`** — smoke-test with `debug_log`
+  before generating hundreds of effects.
+- **Autosave interval options** — whether CK3 can be set to a 5-year autosave.
+
+## Timing (per cycle, measured + estimated)
+
+- Pipeline (unzip, index, graph, reference, relationships, summaries): ~45–50 s.
+- LLM for ~105 Tier-1 rulers: ~5–15 min (the bottleneck).
+- CK3 load: ~1–2 min.
+
+**Total: ~7–18 minutes**, dominated by the LLM. Fine for a turn-based loop,
+not real-time. Optimisations: skip unchanged realms, batch/parallelise LLM
+calls, use a smaller model.
+
+## Honest scope statement
+
+This is a **turn-based** integration: the game is paused, a cycle is run, and
+the save is reloaded. It does not run live inside a session.

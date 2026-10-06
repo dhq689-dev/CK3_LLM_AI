@@ -107,12 +107,17 @@ Phase 1 is complete. All milestones done:
 - [x] Milestone 8 — StrategicSummary builder + JSON output
 - [x] Milestone 9 — LLM strategist
 
-Phase 2 (memory, relationships, negotiation) is in progress:
+Phase 2 (memory, relationships, negotiation) is complete:
 
 - [x] Milestone 10 — Memory extractor
 - [x] Milestone 11 — Relationship graph
 - [x] Milestone 12 — Relationship summary (LLM-facing)
 - [x] Milestone 13 — Negotiation intents (sketch)
+
+Phase 3 (injecting intent into CK3) is **planned, not started** — see the
+Phase 3 Plan in `agents.md`. It covers soft steering (AI personality
+modifiers) + hard actions (the game's own effects), delivered via a generated
+mod, keyed on titles, with a save-based feedback loop.
 
 ## Setup
 
