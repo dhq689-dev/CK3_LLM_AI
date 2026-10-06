@@ -114,10 +114,10 @@ Phase 2 (memory, relationships, negotiation) is complete:
 - [x] Milestone 12 — Relationship summary (LLM-facing)
 - [x] Milestone 13 — Negotiation intents (sketch)
 
-Phase 3 (injecting intent into CK3) is **planned, not started** — see the
-Phase 3 Plan in `agents.md`. It covers soft steering (AI personality
-modifiers) + hard actions (the game's own effects), delivered via a generated
-mod, keyed on titles, with a save-based feedback loop.
+Phase 3 (injecting intent into CK3) is **planned, not started** — see
+`docs/roadmap.md`. It covers soft steering (AI personality modifiers) + hard
+actions (the game's own effects), delivered via a generated mod, keyed on
+titles, with a save-based feedback loop.
 
 ## Setup
 
@@ -160,17 +160,20 @@ ck3_strategist/   # the parser package
   strategist.py   # LLM strategist (intent contract)
   cli.py          # command-line entry point
 reference_data/   # static lookup tables (relationships.json)
+docs/             # vision, roadmap, risk register, reviews
 tests/            # unit tests + hand-written fixture
 sample_savedata/  # real saves (gitignored, large)
 ```
 
 ## Documentation
 
-- `agents.md` — project vision, data model, and implementation plan.
+- `docs/vision.md` — objective, architecture, data model, design decisions.
+- `docs/roadmap.md` — all milestones (Phases 1–3) and the Phase 3 design.
+- `docs/risk_register.md` — risks, assumptions, open questions.
 - `parser_implementation.md` — authoritative parser spec (grammar, field map,
   derived-value logic, version-proofing).
-- `docs/review_notes.md` / `docs/review_notes_v2.md` — design reviews and
-  recommendations.
+- `agents.md` — build/test commands, conventions, project structure.
+- `docs/review_notes*.md` — third-party design reviews.
 
 ## Development
 

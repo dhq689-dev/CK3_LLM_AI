@@ -1,0 +1,25 @@
+What's strong
+Parser, JSON, LLM separation. Deterministic and testable up to StrategicSummary, with the LLM as a pluggable callable. This is the right foundation.
+Verification against real saves. The format findings (numeric title IDs, de_facto_liege as title IDs, claims in alive_data, strength in landed_data) were checked against two saves on different game versions.
+Phase 3 now holds the key ideas: soft plus hard levers, title-keyed plans, a legal-move menu, a feedback loop through the save, and the "verify before building" list.
+Honest scope statement. Saying the loop is turn-based and takes 7-18 minutes per cycle avoids overpromising.
+Biggest concern: you're de-risking in the wrong order
+
+Phase 1 is done, but the riskiest assumptions all sit in Phase 3 and are still unverified: whether modifiers work as expected, whether yearly_global_pulse fires and ?= works, how run <file> behaves, and whether the save reloads cleanly with a regenerated mod. Phase 2 (relationships, negotiation) is more parsing work that only matters if injection works.
+
+Build a thin vertical slice now. Hand-write one plan for one king, wrap it in a tiny static mod, load the save, and confirm it applied via debug_log. Do that before Milestones 10-13. If the levers turn out weaker than expected, it changes what the LLM layer should output.
+
+Design concerns
+Adjacency is the real gap. "No geographic adjacency in MVP" is fine for Phase 1, but Milestone 14's war-target menu depends on it. Shared de-jure liege is a weak proxy. You'll need static map data from the game install in reference_data/.
+The menu is a candidate list, not a legal list. You can't fully replicate CB validity in Python. Treat the menu as "plausible" and let in-game triggers be the final arbiter.
+LLMs will cluster. Expect most rulers to come back as "aggression 6-8, unify X". Consider deriving the baseline aggression deterministically from traits and letting the LLM choose targets and deviations from that baseline.
+Define power_ratio precisely. State whether it includes allies, liege and vassal levies, and whether it applies to independent rulers only.
+Mod stability. Your saves are modded, so generated title: keys must exist in the same mod set. Keep one permanent generated mod with a fixed name in the playset, and make the static modifier tiers additive-only. Deleting a modifier definition that a save still references causes errors.
+A hard start_war ignores AI readiness. Guard it with truce, existing-war and strength checks, and cap hard actions per ruler per cycle (which you already plan).
+Missing pieces
+Evaluation. Nothing yet says how you'll know the LLM helps. Run the same save in observer mode with vanilla AI and with the LLM layer, then compare plan adherence (did a war on the chosen target start within N years), wars started, and realm size changes. Log prompts, outputs and seeds.
+Failure handling. Define schema validation, retries on bad JSON, and a no-plan fallback.
+Narrative payoff. Since the goal is emergent narratives, generate a localization file so the plan shows up in-game (a toast or chronicle entry). That doubles as a debugging aid.
+Repo hygiene
+review_notes.md is nearly all praise ("9/10 readiness"). Replace it with a risk register and open questions, which would be more useful to you.
+agents.md is 980 lines of spec, plan and decisions. Split the roadmap into docs/, and keep agents.md for what coding agents need (build and test commands, conventions).
