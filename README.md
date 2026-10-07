@@ -114,10 +114,17 @@ Phase 2 (memory, relationships, negotiation) is complete:
 - [x] Milestone 12 — Relationship summary (LLM-facing)
 - [x] Milestone 13 — Negotiation intents (sketch)
 
-Phase 3 (injecting intent into CK3) is **planned, not started** — see
-`docs/roadmap.md`. It covers soft steering (AI personality modifiers) + hard
-actions (the game's own effects), delivered via a generated mod, keyed on
-titles, with a save-based feedback loop.
+Phase 3 (injecting intent into CK3) is **in progress** — see `docs/roadmap.md`:
+
+- [x] Milestone 14 — Injection smoke test (levers verified)
+- [x] Milestone 15 — Legal-move menu builder (claim-based)
+- [ ] Milestone 16 — Intent contract revision
+- [ ] Milestone 17 — Translation layer
+- [ ] Milestone 18 — Static mod + generated script
+- [ ] Milestone 19 — Feedback loop
+- [ ] Milestone 20 — Evaluation
+- [ ] Milestone 21 — Narrative / localization
+- [ ] Milestone 22 — Cadence & save watcher
 
 ## Setup
 
@@ -157,6 +164,7 @@ ck3_strategist/   # the parser package
   tiers.py        # significant-ruler detection
   summary.py      # StrategicSummary builder
   relationships.py # relationship graph (from memories)
+  menu.py         # legal-move menu (claims, allies, truces)
   strategist.py   # LLM strategist (intent contract)
   cli.py          # command-line entry point
 reference_data/   # static lookup tables (relationships.json)

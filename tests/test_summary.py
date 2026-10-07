@@ -40,7 +40,7 @@ def test_build_summary():
     assert summary["age"] == 50
     assert summary["military_strength"] in ("weak", "average", "strong")
     assert summary["succession_stability"] == "stable"
-    assert summary["major_opportunities"] == []  # claim 3238 not in fixture titles
+    assert summary["major_opportunities"] == ["c_colmar"]  # claim on title 1
     assert summary["active_wars"] == 0
 
 

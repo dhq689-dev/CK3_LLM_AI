@@ -80,7 +80,7 @@ def test_save_reader_characters():
     assert set(chars) == {16801936, 47802, 33597185}
     assert chars[16801936].name == "Blaz"
     assert chars[16801936].prestige == 529.32
-    assert chars[16801936].claims == [3238]
+    assert chars[16801936].claims == [3238, 1]
     assert chars[33597185].strength == 2000
 
 

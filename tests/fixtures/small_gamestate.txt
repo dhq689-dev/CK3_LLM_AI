@@ -101,6 +101,9 @@ living={
 		claim={ {
 				title=3238
 			}
+ {
+				title=1
+			}
  }
 		languages={ language_south_slavic }
 		memories={ 16778116 16778117 }

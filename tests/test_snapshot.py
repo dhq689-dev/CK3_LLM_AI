@@ -24,7 +24,7 @@ def test_build_snapshot():
     assert snap.rank == "king"
     assert snap.independent is True
     assert snap.vassal_ids == [47802]
-    assert snap.claim_ids == [3238]
+    assert snap.claim_ids == [3238, 1]
     assert snap.succession == [16796577, 16808732]
     assert snap.succession_stability == "stable"
     assert snap.strength == 535

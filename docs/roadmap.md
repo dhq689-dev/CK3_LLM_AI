@@ -161,9 +161,12 @@ for aggression). The pipeline must never leave a ruler planless.
   "Injection findings" in `risk_register.md` for the four gotchas
   (`supported_version`, UTF-8 BOM, the `effect` override, global
   `on_game_start` scope).
-- **15 — Legal-move menu builder.** Per ruler, compute candidate war targets
-  (claims/CBs), plausible allies, peace options, and truces. Requires
-  **province adjacency** (static map data in `reference_data/`).
+- **15 — Legal-move menu builder. DONE (claim-based).** Per ruler: war targets
+  (claims on titles held by others), alliance candidates (positive
+  relationships), peace options (active wars), plus truces and existing allies
+  from the save's `relations` section. **Adjacency is still missing** — the
+  menu is claim-based, not border-based; static map data remains a future
+  enhancement.
 - **16 — Intent contract revision.** Emit title keys (landless fallback),
   constrained choices from the menu, and trait-based aggression baseline +
   LLM deviation.
