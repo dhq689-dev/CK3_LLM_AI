@@ -1,20 +1,29 @@
-# Smoke-test on_actions.
+﻿# Smoke-test on_actions.
 #
-# Two mechanisms are wired so we can see which fires:
+# IMPORTANT LESSON:
+# An on_action's `effect` is a SINGLE block and does NOT merge across files --
+# the base game's version wins and ours is discarded. We must instead APPEND to
+# the LIST fields (`on_actions` / `events`), which DO merge.
 #
-#  1. on_game_start       - runs once at load; root should be the player.
-#  2. yearly_global_pulse - runs every in-game year (global scope), then the
-#                           effect reaches a character via a title holder.
-#
-# Watch logs/error.log for the "ck3llm smoke test" debug lines.
+# So we add our own on_action to the list, and put our effect inside it.
 
 on_game_start = {
+	on_actions = { ck3llm_on_game_start }
+}
+
+yearly_global_pulse = {
+	on_actions = { ck3llm_yearly_pulse }
+}
+
+# --- our custom on_actions -----------------------------------------------
+
+ck3llm_on_game_start = {
 	effect = {
 		ck3llm_smoke_test_player = yes
 	}
 }
 
-yearly_global_pulse = {
+ck3llm_yearly_pulse = {
 	effect = {
 		ck3llm_smoke_test_title = yes
 	}

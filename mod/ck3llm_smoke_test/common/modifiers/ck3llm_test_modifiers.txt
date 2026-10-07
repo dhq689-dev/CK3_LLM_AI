@@ -1,4 +1,4 @@
-# Smoke-test modifier.
+﻿# Smoke-test modifier.
 #
 # This uses a plain, definitely-valid stat effect (diplomacy +5) so we can
 # confirm the mod loads and the modifier applies. Once we have verified the

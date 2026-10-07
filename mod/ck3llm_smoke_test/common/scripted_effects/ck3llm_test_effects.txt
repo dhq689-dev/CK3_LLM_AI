@@ -1,4 +1,4 @@
-# Smoke-test scripted effects.
+﻿# Smoke-test scripted effects.
 
 # Applied at game start. Assumes the current scope is a character (the player).
 # If on_game_start has no character scope, this errors -- check error.log; the
