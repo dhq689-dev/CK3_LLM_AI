@@ -155,10 +155,12 @@ for aggression). The pipeline must never leave a ruler planless.
 
 ## Milestones
 
-- **14 — Injection smoke test (vertical slice).** Hand-write one plan for one
-  king, wrap it in a tiny static mod, load the save, and confirm via
-  `debug_log` that the modifier applied and the save reloaded cleanly. Proves
-  the premise before any further investment.
+- **14 — Injection smoke test (vertical slice). DONE.** Mod loads, the
+  `on_action` list-append hook fires, `yearly_global_pulse` fires, `?=`
+  resolves a character scope, and `add_character_modifier` applies. See
+  "Injection findings" in `risk_register.md` for the four gotchas
+  (`supported_version`, UTF-8 BOM, the `effect` override, global
+  `on_game_start` scope).
 - **15 — Legal-move menu builder.** Per ruler, compute candidate war targets
   (claims/CBs), plausible allies, peace options, and truces. Requires
   **province adjacency** (static map data in `reference_data/`).

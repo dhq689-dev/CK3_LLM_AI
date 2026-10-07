@@ -14,7 +14,7 @@ risk document.
 
 | # | Risk / assumption | Likelihood | Impact | Status | Mitigation / how to verify |
 |---|---|---|---|---|---|
-| 1 | **Injection levers don't work as assumed** — AI modifiers may not move behaviour; `yearly_global_pulse` may not fire; `?=` may not be valid; a regenerated mod may not reload cleanly. | Medium | High | `open` | **Milestone 14 smoke test** (hand-written mod, one king, `debug_log`). Do this before anything else in Phase 3. |
+| 1 | **Injection levers** — mod loading, `on_action` hooks, `yearly_global_pulse`, `?=`, and `add_character_modifier` are **verified working** (Milestone 14 smoke test). | — | — | `verified` | See "Injection findings" below. |
 | 2 | **Ironman saves are unparseable** — the parser only handles plaintext. | High | Medium | `accepted` | Confirm directly; document as a hard constraint. If only checksummed, there may be a path. |
 | 3 | **No geographic adjacency** — Milestone 15's war-target menu needs province adjacency; "shared de-jure liege" is a weak proxy. | High | Medium | `open` | Add static map data (province adjacency) to `reference_data/`. |
 | 4 | **The menu can't be fully legal** — CB validity can't be replicated in Python. | High | Low | `accepted` | Treat the menu as *candidate*; in-game triggers are the final arbiter (guarded hard actions). |
@@ -30,13 +30,49 @@ risk document.
 | 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `accepted` | Fine for a turn-based loop; optimise later (skip unchanged realms, smaller model). |
 | 15 | **Console `run <file>`** behaviour unconfirmed. | Medium | Low | `open` | Verify it reads from a user `run/` folder before relying on it for a live loop. |
 
+## Injection findings (Milestone 14 — verified on 1.20.0.4)
+
+Confirmed against a real game with a hand-written smoke-test mod:
+
+1. **Mod loads** only if `supported_version` matches the game (`1.20.*` here);
+   otherwise the launcher leaves it disabled.
+2. **Script files must be UTF-8 BOM** (`utf-8-sig`), or CK3 warns and may
+   misparse.
+3. **Hook on_actions via the list, never `effect`.** Redefining an on_action's
+   `effect` is overridden by the base game. Append to `on_actions = { ... }` /
+   `events = { ... }` instead — those lists merge.
+4. **`yearly_global_pulse` fires** — the workhorse for the translation layer.
+5. **`?=` safe-scope works**: `title:k_france.holder ?= { ... }` reaches a
+   character from a global pulse.
+6. **`on_game_start` has no character scope** (global) — `add_character_modifier`
+   fails there. Iterate (`every_ruler`) or use a title scope to reach characters.
+
+Canonical working pattern:
+
+```text
+yearly_global_pulse = {
+	on_actions = { ck3llm_yearly_pulse }
+}
+
+ck3llm_yearly_pulse = {
+	effect = {
+		title:k_france.holder ?= {
+			add_character_modifier = { modifier = ck3llm_aggressive_4 years = 5 }
+		}
+	}
+}
+```
+
 ## Open questions
 
-- Can CK3's autosave interval be set to 5 years (and is it scriptable)?
 - Do AI-personality modifiers (`ai_boldness`, `ai_war_chance`, ...) actually
-  influence behaviour, and how strongly?
+  move behaviour, and how strongly? (Milestone 14 proved a *stat* modifier
+  applies; the AI dials still need testing.)
+- What are the exact `ai_*` modifier names? (Run `script_docs`.)
+- Can CK3's autosave interval be set to 5 years (and is it scriptable)?
 - What is the cleanest way to surface plans in-game (toast vs chronicle)?
 - What is the minimal legal-move menu that is still useful?
+- Does the console `run <file>` route work for a live loop?
 
 ## Recently closed
 
