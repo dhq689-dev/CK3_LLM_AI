@@ -1,0 +1,26 @@
+# Smoke-test scripted effects.
+
+# Applied at game start. Assumes the current scope is a character (the player).
+# If on_game_start has no character scope, this errors -- check error.log; the
+# yearly path below still proves the mechanism.
+ck3llm_smoke_test_player = {
+	add_character_modifier = {
+		modifier = ck3llm_test_modifier
+		years = 5
+	}
+	debug_log = "ck3llm smoke test: on_game_start fired, modifier applied"
+}
+
+# Applied each year from a global pulse. Uses the `?=` safe-scope operator to
+# reach a character via a title holder.
+#
+# CHANGE `k_france` to a title that exists in your save if it does not.
+ck3llm_smoke_test_title = {
+	title:k_france.holder ?= {
+		add_character_modifier = {
+			modifier = ck3llm_test_modifier
+			years = 5
+		}
+		debug_log = "ck3llm smoke test: yearly pulse applied to k_france holder"
+	}
+}

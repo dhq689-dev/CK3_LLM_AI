@@ -1,0 +1,17 @@
+# Smoke-test modifier.
+#
+# This uses a plain, definitely-valid stat effect (diplomacy +5) so we can
+# confirm the mod loads and the modifier applies. Once we have verified the
+# exact AI-modifier names via the in-game `script_docs` dump, the real
+# translation layer will use fields such as:
+#
+#     ai_boldness = 50
+#     ai_energy = 50
+#     ai_war_chance = ...
+#
+# Those names are NOT used here yet, to keep this smoke test error-free.
+
+ck3llm_test_modifier = {
+	icon = diplomacy_positive
+	diplomacy = 5
+}

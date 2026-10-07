@@ -1,0 +1,21 @@
+# Smoke-test on_actions.
+#
+# Two mechanisms are wired so we can see which fires:
+#
+#  1. on_game_start       - runs once at load; root should be the player.
+#  2. yearly_global_pulse - runs every in-game year (global scope), then the
+#                           effect reaches a character via a title holder.
+#
+# Watch logs/error.log for the "ck3llm smoke test" debug lines.
+
+on_game_start = {
+	effect = {
+		ck3llm_smoke_test_player = yes
+	}
+}
+
+yearly_global_pulse = {
+	effect = {
+		ck3llm_smoke_test_title = yes
+	}
+}
