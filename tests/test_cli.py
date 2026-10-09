@@ -19,7 +19,7 @@ def test_run_pipeline_on_fixture():
 
 def test_run_pipeline_with_mock_llm():
     def mock_llm(prompt: str) -> str:
-        return '{"five_year_goal": "X", "focus": "Military", "aggression": 5, "secondary_goal": "Y"}'
+        return '{"five_year_goal": "X", "focus": "Military", "secondary_goal": "Y", "aggression_deviation": 0}'
 
     summaries, intents = run_pipeline(FIXTURE, tier=1, llm_call=mock_llm)
     assert intents is not None
@@ -54,7 +54,7 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
     from ck3_strategist import cli
 
     def fake_ollama(model="llama3", host="http://localhost:11434"):
-        return lambda prompt: '{"five_year_goal": "X", "focus": "Diplomacy", "aggression": 2, "secondary_goal": "Y"}'
+        return lambda prompt: '{"five_year_goal": "X", "focus": "Diplomacy", "secondary_goal": "Y", "aggression_deviation": -1}'
 
     monkeypatch.setattr(cli, "ollama_call", fake_ollama, raising=False)
     # patch the import inside main

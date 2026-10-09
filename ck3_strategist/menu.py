@@ -34,12 +34,18 @@ class WarTarget:
     holder_id: int | None
     holder_name: str
 
+    @property
+    def ref(self) -> str:
+        """Stable reference used in the intent contract (a title key)."""
+        return self.title_key
+
 
 @dataclass
 class Candidate:
     ruler_id: int
     ruler_name: str
     reason: str
+    ref: str = ""
 
 
 @dataclass
@@ -82,6 +88,12 @@ def _name(graph: WorldGraph, char_id: int | None) -> str:
         return "unheld"
     char = graph.characters.get(char_id)
     return char.name if char else str(char_id)
+
+
+def _ref(graph: WorldGraph, char_id: int) -> str:
+    """Stable ref: the ruler's primary title key, or ``char:<id>`` if landless."""
+    primary = graph.primary_title(char_id)
+    return primary.key if primary else f"char:{char_id}"
 
 
 def build_menu(
@@ -134,7 +146,7 @@ def build_menu(
             continue
         seen.add(other)
         menu.alliance_candidates.append(
-            Candidate(other, _name(graph, other), rel.kind)
+            Candidate(other, _name(graph, other), rel.kind, _ref(graph, other))
         )
 
     # --- peace options: opponents in active wars ---
@@ -150,7 +162,9 @@ def build_menu(
             continue
         seen.add(opponent)
         menu.peace_options.append(
-            Candidate(opponent, _name(graph, opponent), war.war_type)
+            Candidate(
+                opponent, _name(graph, opponent), war.war_type, _ref(graph, opponent)
+            )
         )
 
     return menu

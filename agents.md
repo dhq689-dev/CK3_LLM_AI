@@ -60,6 +60,8 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1 and Phase 2 are complete and tested (90 tests). Phase 3 (CK3 injection)
-is **planned, not started** — begin with the Milestone 14 smoke test in
-`docs/roadmap.md` to validate the injection levers before building on them.
+Phase 1, Phase 2, and Phase 3 milestones 14–16 are complete and tested (110
+tests): the injection levers are verified (M14), the legal-move menu builder
+exists (M15), and the intent contract is menu-constrained with a trait-derived
+aggression baseline (M16). Next is **Milestone 17 — translation layer** (intent
+→ modifier tier + guarded hard actions) in `docs/roadmap.md`.

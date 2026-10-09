@@ -7,13 +7,14 @@ import pytest
 from ck3_strategist.strategist import (
     Intent,
     IntentError,
+    Move,
     Strategist,
     build_prompt,
     parse_intent,
 )
 
 
-def test_build_prompt_contains_summary_fields():
+def _summary(**overrides):
     summary = {
         "ruler_name": "King Edward",
         "title": "k_england",
@@ -25,42 +26,106 @@ def test_build_prompt_contains_summary_fields():
         "military_strength": "strong",
         "economic_strength": "average",
         "succession_stability": "stable",
+        "aggression_baseline": 8,
         "active_wars": 1,
         "major_threats": [{"ruler": "Scotland", "power_ratio": 1.4}],
         "major_opportunities": ["Claim on Wales"],
+        "moves": {
+            "war_targets": [{"ref": "k_wales", "holder": "Wales"}],
+            "alliance_candidates": [
+                {"ref": "k_france", "ruler": "France", "reason": "friend"}
+            ],
+            "peace_options": [],
+        },
     }
-    prompt = build_prompt(summary)
+    summary.update(overrides)
+    return summary
+
+
+def _intent_json(**overrides):
+    data = {
+        "five_year_goal": "Unify Britannia",
+        "focus": "Military",
+        "secondary_goal": "Secure succession",
+        "aggression_deviation": 3,
+    }
+    data.update(overrides)
+    return json.dumps(data)
+
+
+_MENU = {
+    "war": {"k_wales"},
+    "alliance": {"k_france"},
+    "peace": {"d_warring"},
+}
+
+
+# --- prompt rendering -------------------------------------------------------
+
+
+def test_build_prompt_contains_summary_fields():
+    prompt = build_prompt(_summary())
     assert "King Edward" in prompt
     assert "ambitious, wrathful" in prompt
     assert "Scotland" in prompt
     assert "five_year_goal" in prompt
 
 
+def test_build_prompt_includes_baseline_and_menu():
+    prompt = build_prompt(_summary())
+    assert "Aggression baseline" in prompt
+    assert "8" in prompt
+    assert "k_wales" in prompt
+    assert "k_france" in prompt
+    assert "aggression_deviation" in prompt
+
+
+def test_build_prompt_handles_missing_menu():
+    prompt = build_prompt(_summary(moves={}))
+    assert "War targets: none" in prompt
+
+
+# --- parsing ----------------------------------------------------------------
+
+
 def test_parse_intent_plain_json():
-    text = '{"five_year_goal": "Unify Britannia", "focus": "Military", "aggression": 8, "secondary_goal": "Secure succession"}'
-    intent = parse_intent(text)
+    intent = parse_intent(_intent_json(), baseline=5)
     assert intent.five_year_goal == "Unify Britannia"
     assert intent.focus == "Military"
+    assert intent.aggression_deviation == 3
     assert intent.aggression == 8
     assert intent.secondary_goal == "Secure succession"
 
 
 def test_parse_intent_with_markdown_fence():
-    text = '```json\n{"five_year_goal": "Expand", "focus": "Diplomacy", "aggression": 3, "secondary_goal": "Marry well"}\n```'
-    intent = parse_intent(text)
-    assert intent.five_year_goal == "Expand"
+    text = "```json\n" + _intent_json(
+        focus="Diplomacy", aggression_deviation=-2
+    ) + "\n```"
+    intent = parse_intent(text, baseline=5)
     assert intent.focus == "Diplomacy"
     assert intent.aggression == 3
 
 
-def test_parse_intent_clamps_aggression():
-    text = '{"five_year_goal": "x", "focus": "Military", "aggression": 99, "secondary_goal": "y"}'
-    assert parse_intent(text).aggression == 10
+def test_parse_intent_clamps_effective_aggression():
+    intent = parse_intent(_intent_json(aggression_deviation=99), baseline=9)
+    assert intent.aggression_deviation == 3
+    assert intent.aggression == 10
+
+
+def test_parse_intent_clamps_negative_effective_aggression():
+    intent = parse_intent(_intent_json(aggression_deviation=-99), baseline=2)
+    assert intent.aggression_deviation == -3
+    assert intent.aggression == 0
+
+
+def test_parse_intent_uses_default_baseline():
+    intent = parse_intent(_intent_json(aggression_deviation=0))
+    assert intent.aggression == 5
 
 
 def test_parse_intent_normalises_focus_case():
-    text = '{"five_year_goal": "x", "focus": "military", "aggression": 5, "secondary_goal": "y"}'
-    assert parse_intent(text).focus == "Military"
+    intent = parse_intent(_intent_json(focus="military"), baseline=5)
+    assert intent.focus == "Military"
 
 
 def test_parse_intent_rejects_no_json():
@@ -69,45 +134,103 @@ def test_parse_intent_rejects_no_json():
 
 
 def test_parse_intent_rejects_invalid_focus():
-    text = '{"five_year_goal": "x", "focus": "Conquest", "aggression": 5, "secondary_goal": "y"}'
     with pytest.raises(IntentError):
-        parse_intent(text)
+        parse_intent(_intent_json(focus="Conquest"))
 
 
-def test_parse_intent_rejects_non_numeric_aggression():
-    text = '{"five_year_goal": "x", "focus": "Military", "aggression": "high", "secondary_goal": "y"}'
+def test_parse_intent_rejects_non_numeric_deviation():
     with pytest.raises(IntentError):
-        parse_intent(text)
+        parse_intent(_intent_json(aggression_deviation="high"))
 
 
-def test_parse_intent_accepts_numeric_string_aggression():
-    text = '{"five_year_goal": "x", "focus": "Military", "aggression": "7", "secondary_goal": "y"}'
-    assert parse_intent(text).aggression == 7
+def test_parse_intent_accepts_numeric_string_deviation():
+    intent = parse_intent(_intent_json(aggression_deviation="2"), baseline=5)
+    assert intent.aggression_deviation == 2
 
 
 def test_parse_intent_rejects_empty_goal():
-    text = '{"five_year_goal": "", "focus": "Military", "aggression": 5, "secondary_goal": "y"}'
     with pytest.raises(IntentError):
-        parse_intent(text)
+        parse_intent(_intent_json(five_year_goal=""))
+
+
+# --- constrained moves ------------------------------------------------------
+
+
+def test_parse_intent_with_moves():
+    text = _intent_json(
+        moves=[
+            {"kind": "war", "ref": "k_wales", "reason": "claim"},
+            {"kind": "alliance", "ref": "k_france", "reason": "friend"},
+        ]
+    )
+    intent = parse_intent(text, baseline=5, valid_refs=_MENU)
+    assert [(m.kind, m.ref) for m in intent.moves] == [
+        ("war", "k_wales"),
+        ("alliance", "k_france"),
+    ]
+    assert isinstance(intent.moves[0], Move)
+    assert intent.moves[0].reason == "claim"
+
+
+def test_parse_intent_drops_moves_not_in_menu():
+    text = _intent_json(
+        moves=[
+            {"kind": "war", "ref": "k_ghost"},
+            {"kind": "war", "ref": "k_wales"},
+        ]
+    )
+    intent = parse_intent(text, baseline=5, valid_refs=_MENU)
+    assert [m.ref for m in intent.moves] == ["k_wales"]
+
+
+def test_parse_intent_drops_kind_ref_mismatch():
+    text = _intent_json(moves=[{"kind": "war", "ref": "k_france"}])
+    intent = parse_intent(text, baseline=5, valid_refs=_MENU)
+    assert intent.moves == []
+
+
+def test_parse_intent_drops_unknown_kind_and_duplicates():
+    text = _intent_json(
+        moves=[
+            {"kind": "marriage", "ref": "k_france"},
+            {"kind": "alliance", "ref": "k_france"},
+            {"kind": "alliance", "ref": "k_france"},
+        ]
+    )
+    intent = parse_intent(text, baseline=5, valid_refs=_MENU)
+    assert len(intent.moves) == 1
+
+
+def test_parse_intent_accepts_moves_without_menu():
+    text = _intent_json(moves=[{"kind": "war", "ref": "whatever"}])
+    intent = parse_intent(text, baseline=5)
+    assert [m.ref for m in intent.moves] == ["whatever"]
+
+
+# --- strategist -------------------------------------------------------------
 
 
 def test_strategist_with_mock_llm():
     def mock_llm(prompt: str) -> str:
-        return '{"five_year_goal": "Conquer", "focus": "Military", "aggression": 7, "secondary_goal": "Build army"}'
+        return _intent_json(
+            five_year_goal="Conquer",
+            secondary_goal="Build army",
+            aggression_deviation=1,
+        )
 
     strategist = Strategist(mock_llm)
-    intent = strategist.plan({"ruler_name": "Test"})
+    intent = strategist.plan(_summary())
     assert isinstance(intent, Intent)
     assert intent.five_year_goal == "Conquer"
-    assert intent.aggression == 7
+    assert intent.aggression == 9
 
 
 def test_strategist_retries_on_bad_output():
     responses = iter(
         [
             "not json at all",
-            '{"five_year_goal": "x", "focus": "Bogus", "aggression": 5, "secondary_goal": "y"}',
-            '{"five_year_goal": "Recovered", "focus": "Intrigue", "aggression": 4, "secondary_goal": "Spy"}',
+            _intent_json(focus="Bogus"),
+            _intent_json(five_year_goal="Recovered", focus="Intrigue"),
         ]
     )
     calls = []
@@ -117,7 +240,7 @@ def test_strategist_retries_on_bad_output():
         return next(responses)
 
     strategist = Strategist(mock_llm, max_retries=2)
-    intent = strategist.plan({"ruler_name": "Test"})
+    intent = strategist.plan(_summary())
     assert intent.five_year_goal == "Recovered"
     assert intent.focus == "Intrigue"
     assert len(calls) == 3
@@ -131,64 +254,25 @@ def test_strategist_gives_up_after_max_retries():
 
     strategist = Strategist(mock_llm, max_retries=1)
     with pytest.raises(IntentError):
-        strategist.plan({"ruler_name": "Test"})
+        strategist.plan(_summary())
 
 
-def test_parse_intent_with_negotiations():
-    text = json.dumps(
-        {
-            "five_year_goal": "X",
-            "focus": "Diplomacy",
-            "aggression": 3,
-            "secondary_goal": "Y",
-            "negotiations": [
-                {"target_id": 42, "type": "alliance", "reason": "shared rival"},
-                {"target_id": 99, "type": "marriage", "reason": "succession"},
-            ],
-        }
-    )
-    intent = parse_intent(text)
-    assert [n.target_id for n in intent.negotiations] == [42, 99]
-    assert intent.negotiations[0].type == "alliance"
-
-
-def test_parse_intent_drops_invalid_negotiation_targets():
-    text = json.dumps(
-        {
-            "five_year_goal": "X",
-            "focus": "Diplomacy",
-            "aggression": 3,
-            "secondary_goal": "Y",
-            "negotiations": [
-                {"target_id": 42, "type": "alliance"},
-                {"target_id": 777, "type": "marriage"},
-            ],
-        }
-    )
-    intent = parse_intent(text, valid_targets={42})
-    assert [n.target_id for n in intent.negotiations] == [42]
-
-
-def test_strategist_validates_negotiation_targets():
+def test_strategist_constrains_moves_to_menu():
     def mock_llm(prompt: str) -> str:
-        return json.dumps(
-            {
-                "five_year_goal": "X",
-                "focus": "Diplomacy",
-                "aggression": 3,
-                "secondary_goal": "Y",
-                "negotiations": [
-                    {"target_id": 42, "type": "alliance", "reason": "friend"},
-                    {"target_id": 999, "type": "marriage", "reason": "ghost"},
-                ],
-            }
+        return _intent_json(
+            moves=[
+                {"kind": "war", "ref": "k_wales", "reason": "claim"},
+                {"kind": "war", "ref": "k_ghost", "reason": "hallucinated"},
+            ]
         )
 
-    summary = {
-        "ruler_name": "X",
-        "relationships": [
-            {"ruler": "Y", "id": 42, "kind": "friend", "date": ""}
-        ],
-    }
-    intent = Strategist(mock_llm).plan(summary)
-    assert [n.target_id for n in intent.negotiations] == [42]
+    intent = Strategist(mock_llm).plan(_summary())
+    assert [m.ref for m in intent.moves] == ["k_wales"]
+
+
+def test_strategist_uses_baseline_for_aggression():
+    def mock_llm(prompt: str) -> str:
+        return _intent_json(aggression_deviation=-2)
+
+    intent = Strategist(mock_llm).plan(_summary(aggression_baseline=6))
+    assert intent.aggression == 4

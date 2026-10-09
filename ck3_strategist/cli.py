@@ -14,8 +14,10 @@ import zipfile
 from dataclasses import asdict
 from pathlib import Path
 
+from .aggression import load_aggression_map
 from .extract import SaveReader
 from .graph import WorldGraph
+from .menu import build_menu, extract_relations
 from .reference import ReferenceData
 from .snapshot import bucket_economic, bucket_strength, build_snapshots
 from .summary import build_summaries
@@ -70,8 +72,19 @@ def run_pipeline(
     relationships = RelationshipGraph.from_save(
         graph, reader.memories(), current_date=current_date
     )
+    truces, alliances = extract_relations(reader)
+    menus = {
+        s.ruler_id: build_menu(graph, relationships, s.ruler_id, truces, alliances)
+        for s in selected
+    }
     summaries = build_summaries(
-        graph, selected, reference, current_date, relationship_graph=relationships
+        graph,
+        selected,
+        reference,
+        current_date,
+        relationship_graph=relationships,
+        menus=menus,
+        aggression_map=load_aggression_map(),
     )
 
     if llm_call is None:

@@ -1,0 +1,24 @@
+{
+  "base": 5,
+  "deltas": {
+    "wrathful": 2,
+    "sadistic": 2,
+    "ambitious": 1,
+    "brave": 1,
+    "arrogant": 1,
+    "vengeful": 1,
+    "callous": 1,
+    "diligent": 1,
+    "greedy": 1,
+    "content": -2,
+    "craven": -2,
+    "calm": -1,
+    "shy": -1,
+    "trusting": -1,
+    "humble": -1,
+    "patient": -1,
+    "compassionate": -1,
+    "lazy": -1,
+    "generous": -1
+  }
+}

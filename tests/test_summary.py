@@ -113,3 +113,31 @@ def test_build_summaries_includes_relationships():
     assert "friend" in kinds
     assert "war_enemy" in kinds
     assert all("ruler" in r and "date" in r for r in blaz["relationships"])
+
+
+def test_build_summary_includes_aggression_baseline():
+    reader, graph, snapshots, reference = _setup()
+    snap = next(s for s in snapshots if s.ruler_id == 16801936)
+    threats = compute_threats(graph, snap, snapshots)
+    summary = build_summary(graph, snap, reference, threats, reader.meta_date())
+    assert 0 <= summary["aggression_baseline"] <= 10
+    assert summary["moves"] == {}  # no menu supplied
+
+
+def test_build_summary_renders_menu_as_moves():
+    from ck3_strategist.menu import build_menu, extract_relations
+    from ck3_strategist.relationships import RelationshipGraph
+
+    reader, graph, snapshots, reference = _setup()
+    snap = next(s for s in snapshots if s.ruler_id == 16801936)
+    threats = compute_threats(graph, snap, snapshots)
+    rg = RelationshipGraph.from_save(
+        graph, reader.memories(), current_date=reader.meta_date()
+    )
+    truces, alliances = extract_relations(reader)
+    menu = build_menu(graph, rg, 16801936, truces, alliances)
+    summary = build_summary(
+        graph, snap, reference, threats, reader.meta_date(), menu=menu
+    )
+    refs = {t["ref"] for t in summary["moves"]["war_targets"]}
+    assert "c_colmar" in refs

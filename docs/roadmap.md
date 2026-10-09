@@ -167,9 +167,12 @@ for aggression). The pipeline must never leave a ruler planless.
   from the save's `relations` section. **Adjacency is still missing** — the
   menu is claim-based, not border-based; static map data remains a future
   enhancement.
-- **16 — Intent contract revision.** Emit title keys (landless fallback),
-  constrained choices from the menu, and trait-based aggression baseline +
-  LLM deviation.
+- **16 — Intent contract revision. DONE.** Intent carries `aggression_deviation`
+  (effective aggression = `clamp(trait baseline + deviation)`) and a `moves`
+  list constrained to the per-ruler menu; targets are stable refs (a title key,
+  or `char:<id>` fallback for the landless). The baseline is computed by the
+  parser and carried in the summary; moves referencing a non-menu ref are
+  dropped during validation.
 - **17 — Translation layer.** Intent → modifier tier + guarded hard actions,
   targeting `script_docs`-verified names.
 - **18 — Static mod + generated script.** Hand-written modifier definitions +
