@@ -68,13 +68,11 @@ def test_translate_war_move_is_guarded():
     assert len(plan.actions) == 1
     action = plan.actions[0]
     assert isinstance(action, GuardedAction)
-    assert action.effect == "start_war"
-    assert action.target_scope == "title:k_england.holder"
-    assert action.params == {"target": "title:k_england.holder"}
-    joined = " ".join(action.guards)
-    assert "has_truce_with" in joined
-    assert "is_at_war_with" in joined
-    assert "title:k_england.holder" in joined
+    assert action.effect == "add_pressed_claim"
+    assert action.target_scope == "title:k_england"  # the claimed title itself
+    assert action.unary is True
+    assert action.params == {}
+    assert action.guards == ["exists = title:k_england"]
 
 
 def test_translate_lists_all_tiers_to_clear():
@@ -93,14 +91,22 @@ def test_translate_alliance_and_landless_target():
         _intent(
             moves=[
                 Move("alliance", "char:17313", "spouse"),
-                Move("peace", "k_castile", "war"),
+                Move("alliance", "k_castile", "friend"),
             ]
         ),
         _summary(),
     )
-    assert [a.kind for a in plan.actions] == ["alliance", "peace"]
+    assert [a.kind for a in plan.actions] == ["alliance", "alliance"]
     assert plan.actions[0].target_scope == "character:17313"
     assert plan.actions[1].target_scope == "title:k_castile.holder"
+
+
+def test_translate_drops_unsupported_peace_move():
+    # `end_war` is war-scoped; peace is not translatable yet, so it is dropped
+    plan = translate(
+        _intent(moves=[Move("peace", "k_castile", "war")]), _summary()
+    )
+    assert plan.actions == []
 
 
 def test_translate_caps_hard_actions():

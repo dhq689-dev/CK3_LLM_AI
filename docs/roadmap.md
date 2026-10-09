@@ -215,15 +215,20 @@ for aggression). The pipeline must never leave a ruler planless.
 The review found that the last mile is unvalidated. These are ordered so
 correctness precedes features; **CG1–CG2 block trusting the generated file**.
 
-- **CG1 — Verify CK3 names.** Run `script_docs` for the target version; normalise
-  its output to `{"effects": [...], "triggers": [...], "modifiers": [...]}`;
-  run `python -m ck3_strategist.validate <dump>` and fix every unknown name.
-  Without this the hard actions are guesswork. (Validator scaffold exists;
-  trigger validation needs structured guards.)
-- **CG2 — Fix the hard actions** against the dump: `start_war` needs a
-  `casus_belli` (and usually a target title); `end_war` runs in a **war** scope;
-  confirm the alliance effect; replace the invented `power_ratio_at_least`
-  (already removed). Then run the M18 in-game smoke test.
+- **CG1 — Verify CK3 names. DONE (1.20.0.4).** `validate.py` parses the
+  `script_docs` logs (`effects.log`/`triggers.log`/`modifiers.log`) and checks
+  every effect and guard trigger in `translation.json`:
+  `python -m ck3_strategist.validate --logs <logs>` → all names found (2128
+  effects, 1935 triggers).
+- **CG2 — Fix the hard actions. IN PROGRESS.** Names corrected against the dump:
+  `create_alliance` (verified), alliance guard `is_allied_to` (was
+  `has_alliance_with`), truce trigger `has_truce` (was `has_truce_with`). The
+  "war" move now uses the verified, CB-free `add_pressed_claim = title:<key>`
+  lever (grants a pressed claim; vanilla AI pursues it) instead of a malformed
+  `start_war`. `end_war` is war-scoped, so the `peace` move is dropped from the
+  table until it is rewritten in a war scope. In-game smoke test still pending.
+  For reference, the verified `start_war` form (for a future forced-war lever)
+  is `start_war = { cb = claim_cb target = <holder> target_title = title:<key> }`.
 - **CG3 — Standing orders (data-only generated file).** Generate only *data*
   (target, expiry) and let a static, hand-tested yearly effect re-check
   readiness and act. Fixes the "everyone declares war in January" pile-up,

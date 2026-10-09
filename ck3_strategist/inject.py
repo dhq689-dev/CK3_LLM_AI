@@ -37,6 +37,8 @@ def _indent(level: int, text: str) -> str:
 
 
 def _render_effect(action) -> str:
+    if action.unary:
+        return f"{action.effect} = {action.target_scope}"
     if not action.params:
         return f"{action.effect} = yes"
     inner = " ".join(f"{k} = {v}" for k, v in action.params.items())

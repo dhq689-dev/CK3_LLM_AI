@@ -56,6 +56,7 @@ class GuardedAction:
     target_scope: str
     guards: list[str] = field(default_factory=list)
     params: dict = field(default_factory=dict)
+    unary: bool = False
 
 
 @dataclass
@@ -78,18 +79,20 @@ def make_plan_id(ruler_ref: str, current_date: str = "") -> int:
     return zlib.crc32(raw) & 0xFFFFFFFF
 
 
-def ref_to_scope(ref: str, table: dict) -> str:
+def ref_to_scope(ref: str, table: dict, template_key: str = "title") -> str:
     """Resolve a stable ref to a CK3 scope expression.
 
-    A title ref (``k_france``) becomes the title's holder; a landless ref
-    (``char:<id>``) becomes the character scope.
+    A title ref (``k_france``) resolves via the ``template_key`` scope template
+    (default: the title's holder). A landless ref (``char:<id>``) becomes the
+    character scope.
     """
     scopes = table.get("scopes", {})
     prefix = str(table.get("character_ref_prefix", "char:"))
     if ref.startswith(prefix):
         cid = ref[len(prefix) :]
         return Template(scopes.get("character", "character:$id")).substitute(id=cid)
-    return Template(scopes.get("title", "title:$ref.holder")).substitute(ref=ref)
+    template = scopes.get(template_key) or scopes.get("title", "title:$ref.holder")
+    return Template(template).substitute(ref=ref)
 
 
 def aggression_tier(aggression: int, table: dict) -> str:
@@ -120,18 +123,25 @@ def _build_action(move: Move, table: dict) -> GuardedAction | None:
     spec = (table.get("actions") or {}).get(move.kind)
     if not spec:
         return None  # unknown move kind -> nothing to translate
-    target = ref_to_scope(move.ref, table)
+    unary = bool(spec.get("unary", False))
+    target = ref_to_scope(move.ref, table, spec.get("scope", "title"))
     guards = [
         Template(g).safe_substitute(target=target)
         for g in spec.get("guards", [])
     ]
+    params = (
+        {}
+        if unary
+        else {str(spec.get("target_param", "target")): target}
+    )
     return GuardedAction(
         kind=move.kind,
         effect=str(spec.get("effect", "")),
         target_ref=move.ref,
         target_scope=target,
         guards=guards,
-        params={str(spec.get("target_param", "target")): target},
+        params=params,
+        unary=unary,
     )
 
 

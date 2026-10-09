@@ -46,8 +46,8 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "add_character_modifier = {" in text
     assert "modifier = ck3llm_aggressive_4" in text
     assert "years = 5" in text
-    assert "start_war = { target = title:k_england.holder }" in text
-    assert "has_truce_with" in text
+    assert "add_pressed_claim = title:k_england" in text
+    assert "exists = title:k_england" in text
 
 
 def test_render_omits_start_year_when_no_date():
