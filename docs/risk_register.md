@@ -29,7 +29,7 @@ risk document.
 | 13 | **Version drift** — save format changes between game versions. | Low | Medium | `mitigating` | Verified against 1.17 and 1.19; drift points documented in `../parser_implementation.md` §0. |
 | 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `accepted` | Fine for a turn-based loop; optimise later (skip unchanged realms, smaller model). |
 | 15 | **Console `run <file>`** behaviour unconfirmed. | Medium | Low | `open` | Verify it reads from a user `run/` folder before relying on it for a live loop. |
-| 16 | **Hard actions unverified in-game** — names now validated against the `script_docs` dump, but the generated file has not run yet. | Medium | High | `mitigating` | CG1 done: every effect/trigger name validated (1.20.0.4). War uses `add_pressed_claim`; alliance uses `create_alliance` + `is_allied_to`. In-game smoke test still pending. |
+| 16 | **Hard actions** — names validated (CG1) and executed cleanly in-game. | Low | High | `verified` | `add_pressed_claim` and `create_alliance` (unary forms) run without errors; targets guarded with `is_alive`. See "Soft + hard lever status". |
 | 17 | **Modifier tiers stacked across cycles** (distinct keys coexisted and partly cancelled). | — | Medium | `closed` | The generator now clears all five tiers before applying the new one (review v4 §3). |
 | 18 | **No-plan fallback was missing** — one bad LLM response aborted the whole cycle. | High | High | `closed` | `baseline_intent` + per-ruler `try/except`; failures logged as `fallback: true` (review v4 §6). |
 | 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Medium | Low | `open` | Localize goals (M21) or wire `focus` to AI dials (review v4 §1). |
@@ -85,10 +85,27 @@ From running the generated effect in-game for the first time:
    above errored on the first ruler, so only that ruler's variables (set before
    the error) persisted. A name validator (CG1) plus small, guarded effects is
    the mitigation.
-5. Confirmed working in this run: the `yearly_global_pulse` hook, `?=` scope,
-   `set_variable`, and the effect firing. Hard actions had no moves in the
-   baseline run, so `add_pressed_claim` / `create_alliance` are name-verified
-   but not yet executed.
+5. Confirmed working: the `yearly_global_pulse` hook, `?=` scope,
+   `set_variable`, and the effect firing (hard actions below).
+6. **`add_pressed_claim` works** as a unary effect: `add_pressed_claim =
+   title:<key>` (no errors, applied to 31 rulers).
+7. **`is_allied_to` and `create_alliance` are unary too.** `is_allied_to =
+   <scope>` and `create_alliance = <scope>` (the shorthand sets the
+   allied-through characters). The block forms error: `is_allied_to = { target
+   = X }` → "Unknown trigger: target"; `create_alliance = { target = X }` →
+   "allied_through_owner: field not set".
+8. **Dead-but-existing targets error.** `exists` does not exclude a dead
+   character, so an alliance target that died between save and pulse errors
+   ("alliance target is dead"). Guard with `<scope> = { is_alive = yes }`.
+
+## Soft + hard lever status (validated in-game, 1.20.0.4)
+
+- Aggression tiers apply, clear, and expire (save shows one
+  `ck3llm_aggressive_*` per ruler with a 5-year `expiration_date`).
+- `ck3llm_plan_id`/`ck3llm_plan_start` are written and read back
+  (`previous_plan`) on the next parse.
+- `add_pressed_claim` and `create_alliance` execute cleanly with the guards
+  above.
 
 ## Open questions
 

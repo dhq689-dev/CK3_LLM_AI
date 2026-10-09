@@ -52,7 +52,7 @@ def test_check_reports_unknown_trigger():
         table,
         {
             "effects": ["add_pressed_claim", "create_alliance"],
-            "triggers": ["exists"],
+            "triggers": ["exists", "is_alive"],
         },
     )
     assert report["triggers"] == ["is_allied_to"]

@@ -182,16 +182,16 @@ for aggression). The pipeline must never leave a ruler planless.
   All CK3 names live in `reference_data/translation.json` and remain
   **unverified** pending a `script_docs` dump (see `validate.py`). Script
   emission is Milestone 18.
-- **18 — Static mod + generated script. IN PROGRESS (soft lever validated
-  in-game).** `mod/ck3llm_strategist/` holds the hand-written aggression tiers
-  and the `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s
-  into `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), clearing stale
-  tiers and stamping `ck3llm_plan_id`/`ck3llm_plan_start`. First in-game run
-  confirmed the hook, `?=` scope, `set_variable`, and tier application; found
-  that `remove_character_modifier` is unary and `type=value` variables are
-  fixed-point (see risk register "Live smoke-test findings"). Hard actions
-  (`add_pressed_claim`/`create_alliance`) are name-verified but not yet
-  executed.
+- **18 — Static mod + generated script. DONE (validated in-game 1.20.0.4).**
+  `mod/ck3llm_strategist/` holds the hand-written aggression tiers and the
+  `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s into
+  `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), clearing stale tiers
+  and stamping `ck3llm_plan_id`/`ck3llm_plan_start`. In-game runs confirmed the
+  hook, `?=` scope, tier apply/clear/expire, the feedback variables, and the
+  hard actions (`add_pressed_claim`, `create_alliance`). See risk register
+  "Live smoke-test findings" for the syntax gotchas (`remove_character_modifier`
+  is unary; `type=value` vars are fixed-point; `is_allied_to`/`create_alliance`
+  are unary; guard dead targets with `is_alive`).
 - **19 — Feedback loop. DONE.** The generated effect stamps `ck3llm_plan_id`
   and `ck3llm_plan_start`; the parser reads `ck3llm_*` character variables back
   into `Character.plan_vars`, the summary exposes `previous_plan`
@@ -221,15 +221,14 @@ correctness precedes features; **CG1–CG2 block trusting the generated file**.
   every effect and guard trigger in `translation.json`:
   `python -m ck3_strategist.validate --logs <logs>` → all names found (2128
   effects, 1935 triggers).
-- **CG2 — Fix the hard actions. IN PROGRESS.** Names corrected against the dump:
-  `create_alliance` (verified), alliance guard `is_allied_to` (was
-  `has_alliance_with`), truce trigger `has_truce` (was `has_truce_with`). The
-  "war" move now uses the verified, CB-free `add_pressed_claim = title:<key>`
-  lever (grants a pressed claim; vanilla AI pursues it) instead of a malformed
-  `start_war`. `end_war` is war-scoped, so the `peace` move is dropped from the
-  table until it is rewritten in a war scope. In-game smoke test still pending.
-  For reference, the verified `start_war` form (for a future forced-war lever)
-  is `start_war = { cb = claim_cb target = <holder> target_title = title:<key> }`.
+- **CG2 — Fix the hard actions. DONE (validated in-game).** Names corrected and
+  executed: alliance guard `is_allied_to` (unary), truce trigger `has_truce`; the
+  "war" move uses the CB-free `add_pressed_claim = title:<key>`, and
+  `create_alliance = <scope>` (both unary). Dead target titles are guarded with
+  `<scope> = { is_alive = yes }`. `end_war` is war-scoped, so the `peace` move
+  stays dropped until rewritten in a war scope. For a future forced-war lever
+  the verified form is `start_war = { cb = claim_cb target = <holder>
+  target_title = title:<key> }`.
 - **CG3 — Standing orders (data-only generated file).** Generate only *data*
   (target, expiry) and let a static, hand-tested yearly effect re-check
   readiness and act. Fixes the "everyone declares war in January" pile-up,

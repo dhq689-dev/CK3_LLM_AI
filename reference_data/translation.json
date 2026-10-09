@@ -1,6 +1,6 @@
 {
   "_comment": "Translation table for the CK3 injection layer. These are DATA, not code, so a mod/version change is an edit here. Strings are string.Template templates (placeholders: $ref, $id, $target).",
-  "_verified": "Effect and trigger names verified against a script_docs dump for CK3 1.20.0.4 (docs/roadmap.md CG1). Re-run `python -m ck3_strategist.validate <dump>` after any change.",
+  "_verified": "Effect and trigger names verified against a script_docs dump and in-game runs (CK3 1.20.0.4). Re-run `python -m ck3_strategist.validate --logs <logs>` after any change.",
   "aggression_tiers": {
     "prefix": "ck3llm_aggressive_",
     "count": 5,
@@ -26,10 +26,11 @@
     },
     "alliance": {
       "effect": "create_alliance",
-      "target_param": "target",
+      "unary": true,
       "guards": [
         "exists = $target",
-        "NOT = { is_allied_to = { target = $target } }"
+        "$target = { is_alive = yes }",
+        "NOT = { is_allied_to = $target }"
       ]
     }
   }

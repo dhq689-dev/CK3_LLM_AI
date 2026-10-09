@@ -99,6 +99,13 @@ def test_translate_alliance_and_landless_target():
     assert [a.kind for a in plan.actions] == ["alliance", "alliance"]
     assert plan.actions[0].target_scope == "character:17313"
     assert plan.actions[1].target_scope == "title:k_castile.holder"
+    assert plan.actions[0].unary is True  # create_alliance shorthand
+    assert "NOT = { is_allied_to = character:17313 }" in plan.actions[0].guards
+    assert (
+        "NOT = { is_allied_to = title:k_castile.holder }"
+        in plan.actions[1].guards
+    )
+    assert "character:17313 = { is_alive = yes }" in plan.actions[0].guards
 
 
 def test_translate_drops_unsupported_peace_move():
