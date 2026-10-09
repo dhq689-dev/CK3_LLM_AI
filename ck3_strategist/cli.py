@@ -15,6 +15,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .aggression import load_aggression_map
+from .cadence import PLAN_INTERVAL_YEARS, PlanStore, intent_from_plan, is_due
 from .extract import SaveReader
 from .graph import WorldGraph
 from .inject import DEFAULT_MOD_DIR, write_mod_effect
@@ -24,7 +25,7 @@ from .reference import ReferenceData
 from .snapshot import bucket_economic, bucket_strength, build_snapshots
 from .summary import build_summaries
 from .tiers import TIER_1, TIER_2, classify_rulers
-from .translation import translate_all
+from .translation import translate
 
 
 def extract_gamestate(save_path: str) -> tuple[str, bool]:
@@ -63,6 +64,9 @@ def run_pipeline(
     seed: int | None = None,
     model: str | None = None,
     planner=None,
+    cadence: bool = False,
+    plans_store: str | None = None,
+    interval: int = PLAN_INTERVAL_YEARS,
 ) -> tuple[list[dict], list | None, list | None]:
     """Run the full pipeline.
 
@@ -74,6 +78,9 @@ def run_pipeline(
     ``llm_call`` is a ``callable(prompt)->str``. Alternatively ``planner`` is a
     ``callable(summary)->Intent`` used directly (no prompts); this is how the
     deterministic ``baseline`` and ``mock`` backends run.
+
+    With ``cadence`` on, a ruler is only re-planned when their plan is missing or
+    ``interval`` years old; the stored plan is reused otherwise (Milestone 22).
     """
     reader = SaveReader(gamestate_path)
     graph = WorldGraph.from_save(reader)
@@ -118,9 +125,36 @@ def run_pipeline(
 
     from .strategist import Strategist, baseline_intent
 
+    store = PlanStore.load(plans_store) if (cadence and plans_store) else None
+
     intents = []
     entries: list[dict] = []
+    plans = []
     for snap, summary in zip(selected, summaries, strict=False):
+        title_ref = str(summary.get("title") or "")
+        char = graph.characters.get(snap.ruler_id)
+        plan_vars = char.plan_vars if char is not None else {}
+        if (
+            store is not None
+            and not is_due(plan_vars, current_date, interval)
+        ):
+            reused = store.get(title_ref)
+            if reused is not None:
+                reused_intent = intent_from_plan(reused)
+                intents.append(reused_intent)
+                plans.append(reused)
+                entries.append(
+                    {
+                        "ruler_id": snap.ruler_id,
+                        "ruler_name": summary.get("ruler_name"),
+                        "title": summary.get("title"),
+                        "reused": True,
+                        "intent": asdict(reused_intent),
+                        "plan": asdict(reused),
+                    }
+                )
+                continue
+
         exchanges: list[dict] = []
         fallback_error: str | None = None
         try:
@@ -132,7 +166,9 @@ def run_pipeline(
         except Exception as e:  # noqa: BLE001 - never leave a ruler planless
             fallback_error = str(e)
             intent = baseline_intent(summary)
+        plan = translate(intent, summary, current_date)
         intents.append(intent)
+        plans.append(plan)
         entries.append(
             {
                 "ruler_id": snap.ruler_id,
@@ -140,16 +176,19 @@ def run_pipeline(
                 "title": summary.get("title"),
                 "seed": seed,
                 "model": model,
+                "reused": False,
                 "fallback": fallback_error is not None,
                 "fallback_error": fallback_error,
                 "exchanges": exchanges,
                 "intent": asdict(intent),
+                "plan": asdict(plan),
             }
         )
 
-    plans = translate_all(summaries, intents, current_date)
-    for entry, plan in zip(entries, plans, strict=False):
-        entry["plan"] = asdict(plan)
+    if store is not None and plans_store is not None:
+        for plan in plans:
+            store.put(plan)
+        store.save(plans_store)
 
     if log_dir is not None:
         from .runlog import cycle_filename, write_cycle
@@ -211,58 +250,97 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="LLM seed, for a reproducible observer-mode A/B run",
     )
+    parser.add_argument(
+        "--cadence",
+        action="store_true",
+        help="re-plan only rulers whose plan is missing or >= interval years old",
+    )
+    parser.add_argument(
+        "--plans-store",
+        default=None,
+        help="plan store for cadence reuse (default: <output>/plans_store.json)",
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=PLAN_INTERVAL_YEARS,
+        help="re-plan interval in in-game years (default: 5)",
+    )
+    parser.add_argument(
+        "--watch",
+        default=None,
+        metavar="DIR",
+        help="watch a saves directory and run a cycle on each new save",
+    )
     args = parser.parse_args(argv)
 
-    gamestate_path, is_temp = extract_gamestate(args.save)
-    try:
-        llm_call = None
-        planner = None
-        if args.llm == "ollama":
-            from .strategist import ollama_call
+    plans_store = args.plans_store
+    if plans_store is None and args.cadence:
+        plans_store = str(Path(args.output) / "plans_store.json")
 
-            llm_call = ollama_call(args.model, seed=args.seed)
-        elif args.llm == "baseline":
-            from .strategist import baseline_intent
+    llm_call = None
+    planner = None
+    if args.llm == "ollama":
+        from .strategist import ollama_call
 
-            planner = baseline_intent
-        elif args.llm == "mock":
-            from .strategist import mock_intent
+        llm_call = ollama_call(args.model, seed=args.seed)
+    elif args.llm == "baseline":
+        from .strategist import baseline_intent
 
-            planner = mock_intent
-        summaries, intents, plans = run_pipeline(
-            gamestate_path,
-            args.tier,
-            llm_call,
-            mod_dir=args.mod_dir,
-            debug=not args.no_debug,
-            log_dir=args.log_dir,
-            seed=args.seed,
-            model=args.model if args.llm == "ollama" else None,
-            planner=planner,
-        )
-    finally:
-        if is_temp:
-            os.unlink(gamestate_path)
+        planner = baseline_intent
+    elif args.llm == "mock":
+        from .strategist import mock_intent
 
-    out = Path(args.output)
-    out.mkdir(parents=True, exist_ok=True)
-    summaries_file = out / "summaries.json"
-    with open(summaries_file, "w", encoding="utf-8") as f:
-        json.dump(summaries, f, indent=2, ensure_ascii=False)
-    print(f"wrote {len(summaries)} summaries to {summaries_file}")
+        planner = mock_intent
 
-    if intents is not None:
-        intents_file = out / "intents.json"
-        with open(intents_file, "w", encoding="utf-8") as f:
-            json.dump(
-                [asdict(i) for i in intents], f, indent=2, ensure_ascii=False
+    def run_once(save_path: str) -> None:
+        gamestate_path, is_temp = extract_gamestate(save_path)
+        try:
+            summaries, intents, plans = run_pipeline(
+                gamestate_path,
+                args.tier,
+                llm_call,
+                mod_dir=args.mod_dir,
+                debug=not args.no_debug,
+                log_dir=args.log_dir,
+                seed=args.seed,
+                model=args.model if args.llm == "ollama" else None,
+                planner=planner,
+                cadence=args.cadence,
+                plans_store=plans_store,
+                interval=args.interval,
             )
-        print(f"wrote {len(intents)} intents to {intents_file}")
+        finally:
+            if is_temp:
+                os.unlink(gamestate_path)
 
-    if plans is not None:
-        plans_file = out / "plans.json"
-        with open(plans_file, "w", encoding="utf-8") as f:
-            json.dump(
-                [asdict(p) for p in plans], f, indent=2, ensure_ascii=False
-            )
-        print(f"wrote {len(plans)} plans to {plans_file}")
+        out = Path(args.output)
+        out.mkdir(parents=True, exist_ok=True)
+        summaries_file = out / "summaries.json"
+        with open(summaries_file, "w", encoding="utf-8") as f:
+            json.dump(summaries, f, indent=2, ensure_ascii=False)
+        print(f"wrote {len(summaries)} summaries to {summaries_file}")
+
+        if intents is not None:
+            intents_file = out / "intents.json"
+            with open(intents_file, "w", encoding="utf-8") as f:
+                json.dump(
+                    [asdict(i) for i in intents], f, indent=2, ensure_ascii=False
+                )
+            print(f"wrote {len(intents)} intents to {intents_file}")
+
+        if plans is not None:
+            plans_file = out / "plans.json"
+            with open(plans_file, "w", encoding="utf-8") as f:
+                json.dump(
+                    [asdict(p) for p in plans], f, indent=2, ensure_ascii=False
+                )
+            print(f"wrote {len(plans)} plans to {plans_file}")
+
+    if args.watch:
+        from .cadence import watch_saves
+
+        print(f"watching {args.watch} for new saves (Ctrl+C to stop)...")
+        watch_saves(args.watch, on_new=lambda paths: run_once(paths[-1]))
+    else:
+        run_once(args.save)

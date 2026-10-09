@@ -215,7 +215,13 @@ for aggression). The pipeline must never leave a ruler planless.
   the player, but plans are for **AI rulers only** (design principle 8), so the
   toast was dropped; the `ck3llm_plan_toast` message type + localization
   plumbing is kept for a future "inspect an AI ruler" surface.
-- **22 — Cadence & save watcher.** 5-year gating and save detection.
+- **22 — Cadence & save watcher. DONE.** `cadence.py` gates re-planning on the
+  ruler's `ck3llm_plan_start` (`is_due`, default 5 years); a `PlanStore`
+  persists plans by ruler ref and `run_pipeline` reuses them for rulers not yet
+  due (`--cadence` / `--plans-store` / `--interval`). `scan_saves` /
+  `new_saves` / `watch_saves` detect new or changed save files, and `--watch
+  DIR` runs a cycle on each new save. Verified on a real save: a second cycle
+  reused 79 of 80 plans.
 
 ## Correctness gate (from review v4 — do before more Phase-3 features)
 

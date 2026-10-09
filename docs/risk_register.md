@@ -27,7 +27,7 @@ risk document.
 | 11 | **No evaluation** — nothing measures whether the LLM helps. | High | Medium | `mitigating` | M20 harness built: `runlog.py` logs prompts/outputs/seeds; `evaluate.py` scores wars, realm growth, and plan adherence between two saves. Actual observer-mode A/B runs still pending. |
 | 12 | **Character-ID references break on death.** | Medium | Medium | `mitigating` | Key plans on `title:...holder`; use character IDs only for landless targets. |
 | 13 | **Version drift** — save format changes between game versions. | Low | Medium | `mitigating` | Verified against 1.17 and 1.19; drift points documented in `../parser_implementation.md` §0. |
-| 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `accepted` | Fine for a turn-based loop; optimise later (skip unchanged realms, smaller model). |
+| 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `mitigating` | Cadence gating (M22) only re-plans rulers whose plan is ≥5 years old; further optimisations later (parallelise, smaller model). |
 | 15 | **Console `run <file>`** behaviour unconfirmed. | Medium | Low | `open` | Verify it reads from a user `run/` folder before relying on it for a live loop. |
 | 16 | **Hard actions** — names validated (CG1) and executed cleanly in-game. | Low | High | `verified` | `add_pressed_claim` and `create_alliance` (unary forms) run without errors; targets guarded with `is_alive`. See "Soft + hard lever status". |
 | 17 | **Modifier tiers stacked across cycles** (distinct keys coexisted and partly cancelled). | — | Medium | `closed` | The generator now clears all five tiers before applying the new one (review v4 §3). |

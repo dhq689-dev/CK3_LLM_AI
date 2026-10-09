@@ -108,6 +108,28 @@ def test_run_pipeline_excludes_player(tmp_path):
     assert "Basileios" in names
 
 
+def test_run_pipeline_cadence_reuses_stored_plans(tmp_path):
+    from ck3_strategist.runlog import load_cycle
+    from ck3_strategist.strategist import baseline_intent
+
+    store = tmp_path / "plans_store.json"
+    logs = tmp_path / "logs"
+    kwargs = {
+        "tier": 1,
+        "planner": baseline_intent,
+        "cadence": True,
+        "plans_store": str(store),
+        "log_dir": str(logs),
+    }
+    run_pipeline(FIXTURE, **kwargs)
+    run_pipeline(FIXTURE, **kwargs)
+    records = load_cycle(logs / "cycle_918-11-5.jsonl")
+    reused_titles = {r["title"] for r in records if r.get("reused")}
+    # Blaz has ck3llm_plan_start=918 and the save is dated 918, so not due
+    assert "k_france" in reused_titles
+    assert store.exists()
+
+
 def test_extract_gamestate_plaintext():
     path, is_temp = extract_gamestate(FIXTURE)
     assert path == FIXTURE
