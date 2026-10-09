@@ -321,6 +321,31 @@ def baseline_intent(summary: dict) -> Intent:
     )
 
 
+def mock_intent(summary: dict) -> Intent:
+    """Deterministic stand-in for the LLM: pick the first option per move kind.
+
+    For live-testing the injection layer without an LLM (and for a smoke test of
+    the hard actions once their names are verified). Not a production planner.
+    """
+    base = baseline_intent(summary)
+    moves: list[Move] = []
+    menu = summary.get("moves") or {}
+    for kind, key in _MOVE_LIST_KEY.items():
+        for item in menu.get(key) or []:
+            ref = item.get("ref") if isinstance(item, dict) else None
+            if ref:
+                moves.append(Move(kind=kind, ref=ref, reason="mock"))
+                break
+    return Intent(
+        five_year_goal=base.five_year_goal,
+        focus=base.focus,
+        aggression=base.aggression,
+        aggression_deviation=0,
+        secondary_goal=base.secondary_goal,
+        moves=moves,
+    )
+
+
 class Strategist:
     def __init__(
         self,

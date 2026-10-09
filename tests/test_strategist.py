@@ -336,3 +336,18 @@ def test_baseline_intent_handles_missing_data():
         "Intrigue",
         "Learning",
     )
+
+
+def test_mock_intent_picks_first_menu_option():
+    from ck3_strategist.strategist import mock_intent
+
+    intent = mock_intent(_summary())
+    by_kind = {m.kind: m.ref for m in intent.moves}
+    assert by_kind.get("war") == "k_wales"
+    assert by_kind.get("alliance") == "k_france"
+
+
+def test_mock_intent_handles_empty_menu():
+    from ck3_strategist.strategist import mock_intent
+
+    assert mock_intent(_summary(moves={})).moves == []

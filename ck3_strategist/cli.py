@@ -61,14 +61,18 @@ def run_pipeline(
     log_dir: str | None = None,
     seed: int | None = None,
     model: str | None = None,
+    planner=None,
 ) -> tuple[list[dict], list | None, list | None]:
     """Run the full pipeline.
 
     Returns ``(summaries, intents_or_None, plans_or_None)``. When ``mod_dir`` is
-    given and an LLM ran, the per-cycle ``scripted_effect`` is written into that
-    mod (Milestone 18). When ``log_dir`` is given, a JSONL cycle log (prompts,
-    raw responses, intents, plans, seed/model) is written for evaluation
-    (Milestone 20).
+    given and plans were produced, the per-cycle ``scripted_effect`` is written
+    into that mod (Milestone 18). When ``log_dir`` is given, a JSONL cycle log is
+    written for evaluation (Milestone 20).
+
+    ``llm_call`` is a ``callable(prompt)->str``. Alternatively ``planner`` is a
+    ``callable(summary)->Intent`` used directly (no prompts); this is how the
+    deterministic ``baseline`` and ``mock`` backends run.
     """
     reader = SaveReader(gamestate_path)
     graph = WorldGraph.from_save(reader)
@@ -103,7 +107,7 @@ def run_pipeline(
         aggression_map=load_aggression_map(),
     )
 
-    if llm_call is None:
+    if llm_call is None and planner is None:
         return summaries, None, None
 
     from .strategist import Strategist, baseline_intent
@@ -112,10 +116,13 @@ def run_pipeline(
     entries: list[dict] = []
     for snap, summary in zip(selected, summaries, strict=False):
         exchanges: list[dict] = []
-        strategist = Strategist(llm_call, on_exchange=exchanges.append)
         fallback_error: str | None = None
         try:
-            intent = strategist.plan(summary)
+            if planner is not None:
+                intent = planner(summary)
+            else:
+                strategist = Strategist(llm_call, on_exchange=exchanges.append)
+                intent = strategist.plan(summary)
         except Exception as e:  # noqa: BLE001 - never leave a ruler planless
             fallback_error = str(e)
             intent = baseline_intent(summary)
@@ -167,9 +174,10 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--llm",
-        choices=["none", "ollama"],
+        choices=["none", "ollama", "baseline", "mock"],
         default="none",
-        help="LLM backend (default: none)",
+        help="planner backend: none (parse only), ollama, baseline "
+        "(deterministic, no LLM), mock (deterministic, picks menu options)",
     )
     parser.add_argument(
         "--model", default="llama3", help="model name for the LLM backend"
@@ -201,10 +209,19 @@ def main(argv: list[str] | None = None) -> None:
     gamestate_path, is_temp = extract_gamestate(args.save)
     try:
         llm_call = None
+        planner = None
         if args.llm == "ollama":
             from .strategist import ollama_call
 
             llm_call = ollama_call(args.model, seed=args.seed)
+        elif args.llm == "baseline":
+            from .strategist import baseline_intent
+
+            planner = baseline_intent
+        elif args.llm == "mock":
+            from .strategist import mock_intent
+
+            planner = mock_intent
         summaries, intents, plans = run_pipeline(
             gamestate_path,
             args.tier,
@@ -213,7 +230,8 @@ def main(argv: list[str] | None = None) -> None:
             debug=not args.no_debug,
             log_dir=args.log_dir,
             seed=args.seed,
-            model=args.model if args.llm != "none" else None,
+            model=args.model if args.llm == "ollama" else None,
+            planner=planner,
         )
     finally:
         if is_temp:

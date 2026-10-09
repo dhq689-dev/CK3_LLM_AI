@@ -71,6 +71,28 @@ def test_run_pipeline_isolates_one_bad_ruler(tmp_path):
     assert records[1]["fallback"] is True
 
 
+def test_run_pipeline_with_baseline_backend():
+    from ck3_strategist.strategist import baseline_intent
+
+    summaries, intents, plans = run_pipeline(
+        FIXTURE, tier=1, planner=baseline_intent
+    )
+    assert intents is not None
+    assert plans is not None
+    assert all(i.moves == [] for i in intents)
+
+
+def test_run_pipeline_with_mock_backend_picks_moves():
+    from ck3_strategist.strategist import mock_intent
+
+    summaries, intents, plans = run_pipeline(
+        FIXTURE, tier=1, planner=mock_intent
+    )
+    assert intents is not None
+    assert plans is not None
+    assert any(i.moves for i in intents)
+
+
 def test_extract_gamestate_plaintext():
     path, is_temp = extract_gamestate(FIXTURE)
     assert path == FIXTURE
