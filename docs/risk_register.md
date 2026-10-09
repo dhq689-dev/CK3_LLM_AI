@@ -32,7 +32,7 @@ risk document.
 | 16 | **Hard actions** — names validated (CG1) and executed cleanly in-game. | Low | High | `verified` | `add_pressed_claim` and `create_alliance` (unary forms) run without errors; targets guarded with `is_alive`. See "Soft + hard lever status". |
 | 17 | **Modifier tiers stacked across cycles** (distinct keys coexisted and partly cancelled). | — | Medium | `closed` | The generator now clears all five tiers before applying the new one (review v4 §3). |
 | 18 | **No-plan fallback was missing** — one bad LLM response aborted the whole cycle. | High | High | `closed` | `baseline_intent` + per-ruler `try/except`; failures logged as `fallback: true` (review v4 §6). |
-| 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Medium | Low | `open` | Localize goals (M21) or wire `focus` to AI dials (review v4 §1). |
+| 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Low | Low | `closed` | M21/CG5: `Plan` carries the narrative, `localization.py` renders it, and the player sees their own plan as a toast. |
 | 20 | **Evaluation can't attribute causation** — two arms can't separate the LLM from the deterministic dial. | High | Medium | `mitigating` | `compare_arms` three-arm harness (vanilla / baseline / LLM) with seeds; runs pending (review v4 §7). |
 | 21 | **Single generated file blast radius** — one bad token breaks the effect for every ruler. | Medium | Medium | `open` | Name validator (CG1) plus the standing-orders data-only file (CG3) shrink it. |
 

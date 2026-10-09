@@ -45,6 +45,7 @@ ck3_strategist/
   strategist.py    LLM strategist (intent contract)
   translation.py   intent -> modifier tier + guarded hard actions
   inject.py        render plans -> CK3 scripted_effect (utf-8-sig)
+  localization.py  render plan narrative -> CK3 localization (.yml)
   runlog.py        JSONL cycle logging (prompts/outputs/seeds)
   evaluate.py      observer-mode evaluation metrics (wars/growth/adherence)
   validate.py      script_docs name validation for the translation table
@@ -69,7 +70,7 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–20 are complete and tested (167
+Phase 1, Phase 2, and Phase 3 milestones 14–21 are complete and tested (176
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
 aggression baseline (M16), the translation layer maps intent → modifier tier +
@@ -77,13 +78,13 @@ guarded hard actions and clears stale tiers (M17), the static mod + generated
 `scripted_effect` render path exists and is **validated in-game** (M18;
 injection hook, tier apply/clear/expire, hard actions, and feedback variables
 all confirmed on CK3 1.20.0.4), `ck3llm_*` plan variables are read back into the
-briefing as `previous_plan` (M19), and the evaluation harness (cycle logging +
-three-arm A/B metrics) exists (M20). A deterministic no-plan fallback +
-per-ruler error isolation are in place.
+briefing as `previous_plan` (M19), the evaluation harness (cycle logging +
+three-arm A/B metrics) exists (M20), and plan narrative is localized in-game as
+a toast (M21). A deterministic no-plan fallback + per-ruler error isolation are
+in place.
 
 A third-party review (`docs/review_notes_v4.txt`) is folded into the
 **"Correctness gate"** in `docs/roadmap.md` (CG1–CG7) and
-`docs/risk_register.md` (#16–#21). **CG1 (name validation) and CG2 (hard
-actions) are done**, validated against a real `script_docs` dump and in-game
-runs; the syntax gotchas are recorded in the risk register. Next is
-**M21 — narrative / localization**, then the three-arm observer A/B (CG6).
+`docs/risk_register.md` (#16–#21). **CG1 (name validation), CG2 (hard actions),
+and CG5 (localized goals) are done.** Next is **M22 — cadence & save watcher**,
+then the three-arm observer A/B (CG6) once an LLM is installed.

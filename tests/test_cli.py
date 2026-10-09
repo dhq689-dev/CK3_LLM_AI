@@ -150,5 +150,8 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
     effect = mod_dir / "common" / "scripted_effects" / "ck3llm_plans.txt"
     assert effect.exists()
     assert effect.read_bytes().startswith(b"\xef\xbb\xbf")  # UTF-8 BOM
+    loc = mod_dir / "localization" / "english" / "ck3llm_l_english.yml"
+    assert loc.exists()
+    assert loc.read_bytes().startswith(b"\xef\xbb\xbf")
     log = log_dir / "cycle_918-11-5.jsonl"
     assert log.exists()

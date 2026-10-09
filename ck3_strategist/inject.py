@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .localization import TITLE_KEY, loc_key
 from .translation import Plan
 
 TAB = "\t"
@@ -94,6 +95,12 @@ def _render_plan(plan: Plan, debug: bool) -> list[str]:
     ]
     for action in plan.actions:
         lines.extend(_render_action(action, level=2))
+    if plan.goal or plan.secondary_goal:
+        # only reaches the player if they play this character
+        lines.append(_indent(2, "send_interface_toast = {"))
+        lines.append(_indent(3, f"title = {TITLE_KEY}"))
+        lines.append(_indent(3, f"desc = {loc_key(plan.plan_id)}"))
+        lines.append(_indent(2, "}"))
     if debug:
         lines.append(_indent(2, f'debug_log = "ck3llm: plan {plan.plan_id} applied"'))
     lines.append(_indent(1, "}"))

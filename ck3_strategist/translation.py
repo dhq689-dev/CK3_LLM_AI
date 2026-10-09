@@ -69,6 +69,9 @@ class Plan:
     modifier: str
     modifier_years: int
     plan_date: str = ""
+    goal: str = ""
+    focus: str = ""
+    secondary_goal: str = ""
     actions: list[GuardedAction] = field(default_factory=list)
     clear_modifiers: list[str] = field(default_factory=list)
 
@@ -181,6 +184,9 @@ def translate(
         modifier=aggression_tier(intent.aggression, table),
         modifier_years=years,
         plan_date=current_date,
+        goal=intent.five_year_goal,
+        focus=intent.focus,
+        secondary_goal=intent.secondary_goal,
         actions=actions,
         clear_modifiers=all_tier_names(table),
     )

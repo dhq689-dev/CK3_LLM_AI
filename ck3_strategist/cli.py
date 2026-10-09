@@ -18,6 +18,7 @@ from .aggression import load_aggression_map
 from .extract import SaveReader
 from .graph import WorldGraph
 from .inject import DEFAULT_MOD_DIR, write_mod_effect
+from .localization import write_mod_localization
 from .menu import build_menu, extract_relations
 from .reference import ReferenceData
 from .snapshot import bucket_economic, bucket_strength, build_snapshots
@@ -153,6 +154,7 @@ def run_pipeline(
         )
     if mod_dir is not None:
         write_mod_effect(plans, mod_dir, debug=debug)
+        write_mod_localization(plans, mod_dir)
     return summaries, intents, plans
 
 

@@ -47,6 +47,8 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "years = 5" in text
     assert "add_pressed_claim = title:k_england" in text
     assert "exists = title:k_england" in text
+    assert "send_interface_toast = {" in text
+    assert "desc = ck3llm_plan_" in text
 
 
 def test_render_omits_start_year_when_no_date():
@@ -135,6 +137,13 @@ def test_static_script_files_have_single_bom():
         data = path.read_bytes()
         assert data.startswith(BOM), path
         assert not data[len(BOM) :].startswith(BOM), f"double BOM: {path}"
+
+
+def test_static_localization_has_single_bom():
+    path = MOD / "localization" / "english" / "ck3llm_l_english.yml"
+    data = path.read_bytes()
+    assert data.startswith(BOM)
+    assert not data[len(BOM) :].startswith(BOM)
 
 
 def test_static_modifiers_define_all_tiers():

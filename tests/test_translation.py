@@ -75,6 +75,14 @@ def test_translate_war_move_is_guarded():
     assert action.guards == ["exists = title:k_england"]
 
 
+def test_translate_carries_narrative():
+    intent = _intent()
+    plan = translate(intent, _summary())
+    assert plan.goal == intent.five_year_goal
+    assert plan.focus == intent.focus
+    assert plan.secondary_goal == intent.secondary_goal
+
+
 def test_translate_lists_all_tiers_to_clear():
     plan = translate(_intent(), _summary())
     assert plan.clear_modifiers == [
