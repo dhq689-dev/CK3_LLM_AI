@@ -40,9 +40,13 @@ ck3_strategist/
   tiers.py         significant-ruler detection
   summary.py       StrategicSummary builder
   relationships.py relationship graph (from memories)
+  menu.py          legal-move menu builder (candidate moves per ruler)
+  aggression.py    trait-derived aggression baseline
   strategist.py    LLM strategist (intent contract)
+  translation.py   intent -> modifier tier + guarded hard actions
   cli.py           command-line entry point
-reference_data/    static tables (relationships.json)
+reference_data/    static tables (relationships.json, aggression_traits.json,
+                   translation.json)
 docs/              vision, roadmap, risk register
 tests/             unit tests + hand-written fixture
 sample_savedata/   real saves (gitignored, large)
@@ -60,8 +64,10 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–16 are complete and tested (110
+Phase 1, Phase 2, and Phase 3 milestones 14–17 are complete and tested (120
 tests): the injection levers are verified (M14), the legal-move menu builder
-exists (M15), and the intent contract is menu-constrained with a trait-derived
-aggression baseline (M16). Next is **Milestone 17 — translation layer** (intent
-→ modifier tier + guarded hard actions) in `docs/roadmap.md`.
+exists (M15), the intent contract is menu-constrained with a trait-derived
+aggression baseline (M16), and the translation layer maps intent → modifier
+tier + guarded hard actions (M17). Next is **Milestone 18 — static mod +
+generated script** (hand-written modifier definitions + `on_action`; Python
+writes the per-cycle `scripted_effect`) in `docs/roadmap.md`.

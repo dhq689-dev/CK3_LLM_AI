@@ -173,8 +173,14 @@ for aggression). The pipeline must never leave a ruler planless.
   or `char:<id>` fallback for the landless). The baseline is computed by the
   parser and carried in the summary; moves referencing a non-menu ref are
   dropped during validation.
-- **17 — Translation layer.** Intent → modifier tier + guarded hard actions,
-  targeting `script_docs`-verified names.
+- **17 — Translation layer. DONE.** `translation.py` turns an intent into a
+  structured `Plan`: an aggression modifier tier (`ck3llm_aggressive_1`..`_5`,
+  applied for a fixed term) plus up to two guarded hard actions from the
+  intent's `moves`. Every action carries its guard triggers (truce /
+  existing-war / strength for `start_war`) so illegal moves silently no-op.
+  Targets are resolved from stable refs to CK3 scopes here. All CK3 names live
+  in `reference_data/translation.json` and are **provisional** pending a
+  `script_docs` dump. Script emission is Milestone 18.
 - **18 — Static mod + generated script.** Hand-written modifier definitions +
   `on_action`; Python writes the per-cycle `scripted_effect`.
 - **19 — Feedback loop.** Read plan variables back into the briefing.

@@ -1,0 +1,117 @@
+"""Tests for the intent -> guarded-action translation layer."""
+
+from ck3_strategist.strategist import Intent, Move
+from ck3_strategist.translation import (
+    GuardedAction,
+    Plan,
+    aggression_tier,
+    load_translation_table,
+    ref_to_scope,
+    translate,
+)
+
+
+def _intent(moves=None, aggression=5):
+    return Intent(
+        five_year_goal="G",
+        focus="Military",
+        aggression=aggression,
+        aggression_deviation=0,
+        secondary_goal="S",
+        moves=moves or [],
+    )
+
+
+def _summary(title="k_france"):
+    return {"title": title}
+
+
+def test_load_table_has_actions():
+    table = load_translation_table()
+    assert "war" in table["actions"]
+    assert table["aggression_tiers"]["count"] == 5
+
+
+def test_aggression_tier_mapping():
+    table = load_translation_table()
+    assert aggression_tier(0, table) == "ck3llm_aggressive_1"
+    assert aggression_tier(3, table) == "ck3llm_aggressive_2"
+    assert aggression_tier(5, table) == "ck3llm_aggressive_3"
+    assert aggression_tier(7, table) == "ck3llm_aggressive_4"
+    assert aggression_tier(10, table) == "ck3llm_aggressive_5"
+
+
+def test_aggression_tier_clamps_high_value():
+    table = load_translation_table()
+    assert aggression_tier(99, table) == "ck3llm_aggressive_5"
+
+
+def test_ref_to_scope_title_and_character():
+    table = load_translation_table()
+    assert ref_to_scope("k_england", table) == "title:k_england.holder"
+    assert ref_to_scope("char:42", table) == "character:42"
+
+
+def test_translate_sets_tier_and_years():
+    plan = translate(_intent(aggression=8), _summary())
+    assert isinstance(plan, Plan)
+    assert plan.ruler_scope == "title:k_france.holder"
+    assert plan.modifier == "ck3llm_aggressive_4"
+    assert plan.modifier_years == 5
+
+
+def test_translate_war_move_is_guarded():
+    plan = translate(
+        _intent(aggression=8, moves=[Move("war", "k_england", "claim")]),
+        _summary(),
+    )
+    assert len(plan.actions) == 1
+    action = plan.actions[0]
+    assert isinstance(action, GuardedAction)
+    assert action.effect == "start_war"
+    assert action.target_scope == "title:k_england.holder"
+    assert action.params == {"target": "title:k_england.holder"}
+    joined = " ".join(action.guards)
+    assert "has_truce_with" in joined
+    assert "is_at_war_with" in joined
+    assert "power_ratio_at_least" in joined
+    assert "title:k_england.holder" in joined
+
+
+def test_translate_alliance_and_landless_target():
+    plan = translate(
+        _intent(
+            moves=[
+                Move("alliance", "char:17313", "spouse"),
+                Move("peace", "k_castile", "war"),
+            ]
+        ),
+        _summary(),
+    )
+    assert [a.kind for a in plan.actions] == ["alliance", "peace"]
+    assert plan.actions[0].target_scope == "character:17313"
+    assert plan.actions[1].target_scope == "title:k_castile.holder"
+
+
+def test_translate_caps_hard_actions():
+    plan = translate(
+        _intent(
+            moves=[
+                Move("war", "k_a", "r"),
+                Move("alliance", "k_b", "r"),
+                Move("peace", "k_c", "r"),
+            ]
+        ),
+        _summary(),
+    )
+    assert len(plan.actions) == 2
+
+
+def test_translate_skips_unknown_kind():
+    plan = translate(_intent(moves=[Move("gift", "k_a", "r")]), _summary())
+    assert plan.actions == []
+
+
+def test_translate_plan_id_includes_date():
+    plan = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
+    assert plan.plan_id == "k_france@1066.1.1"
