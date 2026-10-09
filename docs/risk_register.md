@@ -97,6 +97,10 @@ From running the generated effect in-game for the first time:
 8. **Dead-but-existing targets error.** `exists` does not exclude a dead
    character, so an alliance target that died between save and pulse errors
    ("alliance target is dead"). Guard with `<scope> = { is_alive = yes }`.
+9. **A toast only shows its body via a message type.** `send_interface_toast`
+   with the default type renders the title but not the `desc`; the `desc` is
+   shown by a message type whose `desc` uses `event_message_text`
+   (`$DESCRIPTION$`). The mod defines `ck3llm_plan_toast` for this.
 
 ## Soft + hard lever status (validated in-game, 1.20.0.4)
 

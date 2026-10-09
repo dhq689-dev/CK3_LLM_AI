@@ -205,12 +205,13 @@ for aggression). The pipeline must never leave a ruler planless.
   attributed to the LLM rather than the deterministic dial, and
   `--log-dir`/`--seed` make each arm reproducible. Actual in-game observer runs
   (with several seeds) still pending.
-- **21 — Narrative / localization. DONE.** `Plan` now carries
+- **21 — Narrative / localization. DONE (validated in-game).** `Plan` carries
   `five_year_goal`/`focus`/`secondary_goal`; `localization.py` writes
   `mod/ck3llm_strategist/localization/english/ck3llm_l_english.yml` (UTF-8 BOM)
   with one key per plan, and the generated effect sends the player their own
-  plan as a `send_interface_toast`. The `.yml` also doubles as a plain-English
-  plan catalogue for debugging.
+  plan as a `send_interface_toast` using the mod's `ck3llm_plan_toast` message
+  type (the default toast type ignores `desc`). The `.yml` also doubles as a
+  plain-English plan catalogue for debugging.
 - **22 — Cadence & save watcher.** 5-year gating and save detection.
 
 ## Correctness gate (from review v4 — do before more Phase-3 features)
