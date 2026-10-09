@@ -112,6 +112,11 @@ def test_translate_skips_unknown_kind():
     assert plan.actions == []
 
 
-def test_translate_plan_id_includes_date():
-    plan = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
-    assert plan.plan_id == "k_france@1066.1.1"
+def test_translate_plan_id_is_numeric_and_date_sensitive():
+    first = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
+    again = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
+    later = translate(_intent(), _summary("k_france"), current_date="1070.1.1")
+    assert isinstance(first.plan_id, int)
+    assert first.plan_id == again.plan_id  # deterministic
+    assert first.plan_id != later.plan_id  # new cycle -> new plan var
+    assert first.plan_date == "1066.1.1"

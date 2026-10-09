@@ -1,0 +1,24 @@
+﻿ck3llm_apply_plans = {
+	title:k_france.holder ?= {
+		if = {
+			limit = { NOT = { var:ck3llm_plan_id = 576607408 } }
+			set_variable = { name = ck3llm_plan_id value = 576607408 }
+			add_character_modifier = {
+				modifier = ck3llm_aggressive_2
+				years = 5
+			}
+			debug_log = "ck3llm: plan 576607408 applied"
+		}
+	}
+	title:e_byzantium.holder ?= {
+		if = {
+			limit = { NOT = { var:ck3llm_plan_id = 3997778701 } }
+			set_variable = { name = ck3llm_plan_id value = 3997778701 }
+			add_character_modifier = {
+				modifier = ck3llm_aggressive_2
+				years = 5
+			}
+			debug_log = "ck3llm: plan 3997778701 applied"
+		}
+	}
+}

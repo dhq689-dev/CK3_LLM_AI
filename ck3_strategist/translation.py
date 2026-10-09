@@ -28,6 +28,7 @@ register #10).
 from __future__ import annotations
 
 import json
+import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
@@ -62,11 +63,18 @@ class Plan:
     """The translated plan for one ruler in one cycle."""
 
     ruler_scope: str
-    plan_id: str
+    plan_id: int
     aggression: int
     modifier: str
     modifier_years: int
+    plan_date: str = ""
     actions: list[GuardedAction] = field(default_factory=list)
+
+
+def make_plan_id(ruler_ref: str, current_date: str = "") -> int:
+    """A stable numeric plan id (CK3 variables hold ints, not strings)."""
+    raw = f"{ruler_ref}@{current_date}".encode()
+    return zlib.crc32(raw) & 0xFFFFFFFF
 
 
 def ref_to_scope(ref: str, table: dict) -> str:
@@ -142,12 +150,27 @@ def translate(
         if len(actions) >= limit:
             break
 
-    plan_id = f"{title_ref}@{current_date}" if current_date else title_ref
+    plan_id = make_plan_id(title_ref, current_date)
     return Plan(
         ruler_scope=ruler_scope,
         plan_id=plan_id,
         aggression=intent.aggression,
         modifier=aggression_tier(intent.aggression, table),
         modifier_years=years,
+        plan_date=current_date,
         actions=actions,
     )
+
+
+def translate_all(
+    summaries: list[dict],
+    intents: list[Intent],
+    current_date: str = "",
+    table: dict | None = None,
+) -> list[Plan]:
+    """Translate a cycle's summaries/intents (parallel lists) into plans."""
+    table = table if table is not None else load_translation_table()
+    return [
+        translate(intent, summary, current_date, table)
+        for summary, intent in zip(summaries, intents, strict=False)
+    ]

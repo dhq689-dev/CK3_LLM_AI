@@ -1,0 +1,21 @@
+﻿# CK3 LLM Strategist -- the yearly hook.
+#
+# IMPORTANT (Milestone 14 finding): an on_action's `effect` block does NOT merge
+# across files -- the base game's version wins and ours is discarded. Only the
+# LIST fields (`on_actions` / `events`) merge. So we APPEND our own on_action to
+# the list, and put our effect inside it.
+#
+# `yearly_global_pulse` is the workhorse: it fires once per in-game year from a
+# global scope. Our on_action calls the generated scripted effect
+# `ck3llm_apply_plans`, which Python overwrites every cycle
+# (common/scripted_effects/ck3llm_plans.txt).
+
+yearly_global_pulse = {
+	on_actions = { ck3llm_yearly_pulse }
+}
+
+ck3llm_yearly_pulse = {
+	effect = {
+		ck3llm_apply_plans = yes
+	}
+}

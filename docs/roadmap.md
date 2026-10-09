@@ -181,8 +181,12 @@ for aggression). The pipeline must never leave a ruler planless.
   Targets are resolved from stable refs to CK3 scopes here. All CK3 names live
   in `reference_data/translation.json` and are **provisional** pending a
   `script_docs` dump. Script emission is Milestone 18.
-- **18 — Static mod + generated script.** Hand-written modifier definitions +
-  `on_action`; Python writes the per-cycle `scripted_effect`.
+- **18 — Static mod + generated script. DONE.** `mod/ck3llm_strategist/` holds
+  the hand-written aggression tiers and the `yearly_global_pulse` hook;
+  `inject.py` renders each cycle's `Plan`s into
+  `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), stamping a numeric
+  `ck3llm_plan_id` for idempotence across pulses. `--mod-dir` wires it into the
+  CLI (writes `plans.json` too). In-game smoke test still pending.
 - **19 — Feedback loop.** Read plan variables back into the briefing.
 - **20 — Evaluation.** Run the same save in observer mode (vanilla AI vs LLM
   layer) and compare plan adherence, wars started, and realm growth. Log

@@ -17,11 +17,13 @@ from pathlib import Path
 from .aggression import load_aggression_map
 from .extract import SaveReader
 from .graph import WorldGraph
+from .inject import DEFAULT_MOD_DIR, write_mod_effect
 from .menu import build_menu, extract_relations
 from .reference import ReferenceData
 from .snapshot import bucket_economic, bucket_strength, build_snapshots
 from .summary import build_summaries
 from .tiers import TIER_1, TIER_2, classify_rulers
+from .translation import translate_all
 
 
 def extract_gamestate(save_path: str) -> tuple[str, bool]:
@@ -51,9 +53,18 @@ def extract_gamestate(save_path: str) -> tuple[str, bool]:
 
 
 def run_pipeline(
-    gamestate_path: str, tier: int = 1, llm_call=None
-) -> tuple[list[dict], list | None]:
-    """Run the full pipeline. Returns ``(summaries, intents_or_None)``."""
+    gamestate_path: str,
+    tier: int = 1,
+    llm_call=None,
+    mod_dir: str | None = None,
+    debug: bool = True,
+) -> tuple[list[dict], list | None, list | None]:
+    """Run the full pipeline.
+
+    Returns ``(summaries, intents_or_None, plans_or_None)``. When ``mod_dir`` is
+    given and an LLM ran, the per-cycle ``scripted_effect`` is written into that
+    mod (Milestone 18).
+    """
     reader = SaveReader(gamestate_path)
     graph = WorldGraph.from_save(reader)
     reference = ReferenceData.from_save(reader)
@@ -88,13 +99,16 @@ def run_pipeline(
     )
 
     if llm_call is None:
-        return summaries, None
+        return summaries, None, None
 
     from .strategist import Strategist
 
     strategist = Strategist(llm_call)
     intents = [strategist.plan(s) for s in summaries]
-    return summaries, intents
+    plans = translate_all(summaries, intents, current_date)
+    if mod_dir is not None:
+        write_mod_effect(plans, mod_dir, debug=debug)
+    return summaries, intents, plans
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -122,6 +136,17 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--model", default="llama3", help="model name for the LLM backend"
     )
+    parser.add_argument(
+        "--mod-dir",
+        default=str(DEFAULT_MOD_DIR),
+        help="mod directory to write the generated script into "
+        "(default: mod/ck3llm_strategist)",
+    )
+    parser.add_argument(
+        "--no-debug",
+        action="store_true",
+        help="omit debug_log lines from the generated script",
+    )
     args = parser.parse_args(argv)
 
     gamestate_path, is_temp = extract_gamestate(args.save)
@@ -131,7 +156,13 @@ def main(argv: list[str] | None = None) -> None:
             from .strategist import ollama_call
 
             llm_call = ollama_call(args.model)
-        summaries, intents = run_pipeline(gamestate_path, args.tier, llm_call)
+        summaries, intents, plans = run_pipeline(
+            gamestate_path,
+            args.tier,
+            llm_call,
+            mod_dir=args.mod_dir,
+            debug=not args.no_debug,
+        )
     finally:
         if is_temp:
             os.unlink(gamestate_path)
@@ -150,3 +181,11 @@ def main(argv: list[str] | None = None) -> None:
                 [asdict(i) for i in intents], f, indent=2, ensure_ascii=False
             )
         print(f"wrote {len(intents)} intents to {intents_file}")
+
+    if plans is not None:
+        plans_file = out / "plans.json"
+        with open(plans_file, "w", encoding="utf-8") as f:
+            json.dump(
+                [asdict(p) for p in plans], f, indent=2, ensure_ascii=False
+            )
+        print(f"wrote {len(plans)} plans to {plans_file}")

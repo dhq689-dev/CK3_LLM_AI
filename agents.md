@@ -44,9 +44,11 @@ ck3_strategist/
   aggression.py    trait-derived aggression baseline
   strategist.py    LLM strategist (intent contract)
   translation.py   intent -> modifier tier + guarded hard actions
+  inject.py        render plans -> CK3 scripted_effect (utf-8-sig)
   cli.py           command-line entry point
 reference_data/    static tables (relationships.json, aggression_traits.json,
                    translation.json)
+mod/               static CK3 mod (ck3llm_strategist) + generated effect
 docs/              vision, roadmap, risk register
 tests/             unit tests + hand-written fixture
 sample_savedata/   real saves (gitignored, large)
@@ -64,10 +66,11 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–17 are complete and tested (120
+Phase 1, Phase 2, and Phase 3 milestones 14–18 are complete and tested (130
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
-aggression baseline (M16), and the translation layer maps intent → modifier
-tier + guarded hard actions (M17). Next is **Milestone 18 — static mod +
-generated script** (hand-written modifier definitions + `on_action`; Python
-writes the per-cycle `scripted_effect`) in `docs/roadmap.md`.
+aggression baseline (M16), the translation layer maps intent → modifier tier +
+guarded hard actions (M17), and the static mod + generated `scripted_effect`
+render path exists (M18). In-game smoke test of the generated mod is still
+pending. Next is **Milestone 19 — feedback loop** (read plan variables back into
+the briefing) in `docs/roadmap.md`.

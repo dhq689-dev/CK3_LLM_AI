@@ -10,8 +10,9 @@ FIXTURE = "tests/fixtures/small_gamestate.txt"
 
 
 def test_run_pipeline_on_fixture():
-    summaries, intents = run_pipeline(FIXTURE, tier=1)
+    summaries, intents, plans = run_pipeline(FIXTURE, tier=1)
     assert intents is None
+    assert plans is None
     assert len(summaries) == 2  # king + emperor
     names = {s["ruler_name"] for s in summaries}
     assert "Blaz" in names
@@ -21,10 +22,13 @@ def test_run_pipeline_with_mock_llm():
     def mock_llm(prompt: str) -> str:
         return '{"five_year_goal": "X", "focus": "Military", "secondary_goal": "Y", "aggression_deviation": 0}'
 
-    summaries, intents = run_pipeline(FIXTURE, tier=1, llm_call=mock_llm)
+    summaries, intents, plans = run_pipeline(FIXTURE, tier=1, llm_call=mock_llm)
     assert intents is not None
+    assert plans is not None
     assert len(intents) == len(summaries)
+    assert len(plans) == len(summaries)
     assert intents[0].focus == "Military"
+    assert plans[0].ruler_scope.startswith("title:")
 
 
 def test_extract_gamestate_plaintext():
@@ -62,5 +66,20 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
 
     monkeypatch.setattr(strat, "ollama_call", fake_ollama)
     out = tmp_path / "out2"
-    main([FIXTURE, "--output", str(out), "--llm", "ollama"])
+    mod_dir = tmp_path / "mod"
+    main(
+        [
+            FIXTURE,
+            "--output",
+            str(out),
+            "--llm",
+            "ollama",
+            "--mod-dir",
+            str(mod_dir),
+        ]
+    )
     assert (out / "intents.json").exists()
+    assert (out / "plans.json").exists()
+    effect = mod_dir / "common" / "scripted_effects" / "ck3llm_plans.txt"
+    assert effect.exists()
+    assert effect.read_bytes().startswith(b"\xef\xbb\xbf")  # UTF-8 BOM
