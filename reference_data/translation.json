@@ -1,6 +1,6 @@
 {
   "_comment": "Translation table for the CK3 injection layer. These are DATA, not code, so a mod/version change is an edit here. Strings are string.Template templates (placeholders: $ref, $id, $target).",
-  "_verified": "Effect and trigger names verified against a script_docs dump and in-game runs (CK3 1.20.0.4). Re-run `python -m ck3_strategist.validate --logs <logs>` after any change.",
+  "_verified": "Effect and trigger names verified against a script_docs dump and in-game runs (CK3 1.20.0.4). Run `python -m ck3_strategist.validate --logs <logs>` after any change.",
   "aggression_tiers": {
     "prefix": "ck3llm_aggressive_",
     "count": 5,
@@ -15,23 +15,26 @@
     "title_self": "title:$ref",
     "character": "character:$id"
   },
-  "actions": {
-    "war": {
-      "effect": "add_pressed_claim",
-      "scope": "title_self",
-      "unary": true,
-      "guards": [
-        "exists = $target"
-      ]
-    },
-    "alliance": {
-      "effect": "create_alliance",
-      "unary": true,
-      "guards": [
-        "exists = $target",
-        "$target = { is_alive = yes }",
-        "NOT = { is_allied_to = $target }"
-      ]
-    }
+  "orders": {
+    "war": { "var": "ck3llm_war_target", "scope": "title_self" },
+    "alliance": { "var": "ck3llm_ally_target", "scope": "title" }
+  },
+  "validated_names": {
+    "effects": [
+      "set_variable",
+      "remove_variable",
+      "remove_character_modifier",
+      "add_character_modifier",
+      "debug_log",
+      "add_pressed_claim",
+      "create_alliance"
+    ],
+    "triggers": [
+      "has_variable",
+      "has_claim_on",
+      "exists",
+      "is_alive",
+      "is_allied_to"
+    ]
   }
 }

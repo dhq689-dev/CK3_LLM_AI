@@ -1,0 +1,32 @@
+﻿# Static standing-orders executor (CG3).
+#
+# The generated ck3llm_plans.txt sets each ruler's order variables
+# (ck3llm_war_target = a claimed title, ck3llm_ally_target = a character) and
+# calls this effect from within the ruler's scope each yearly pulse. Keeping the
+# action logic and its readiness checks here means the generated file is data
+# only: a bad generated file cannot carry a malformed effect, and the order is
+# re-evaluated every year instead of firing once.
+#
+# Effect/trigger names verified against script_docs (CK3 1.20.0.4).
+
+ck3llm_execute_orders = {
+	# War order: keep a pressed claim on the target title (vanilla AI pursues it).
+	if = {
+		limit = {
+			has_variable = ck3llm_war_target
+			exists = var:ck3llm_war_target
+			NOT = { has_claim_on = var:ck3llm_war_target }
+		}
+		add_pressed_claim = var:ck3llm_war_target
+	}
+	# Alliance order: only to a living ruler we are not already allied to.
+	if = {
+		limit = {
+			has_variable = ck3llm_ally_target
+			exists = var:ck3llm_ally_target
+			var:ck3llm_ally_target = { is_alive = yes }
+			NOT = { is_allied_to = var:ck3llm_ally_target }
+		}
+		create_alliance = var:ck3llm_ally_target
+	}
+}

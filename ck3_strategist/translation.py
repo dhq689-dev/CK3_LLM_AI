@@ -1,28 +1,28 @@
-"""Translation layer: intent -> modifier tier + guarded hard actions.
+"""Translation layer: intent -> aggression tier + standing-order data.
 
 This is the first half of the two-layer injection design (``docs/roadmap.md``
-"Two-layer translation"). It does **not** write CK3 script -- that is
-Milestone 18. It produces a structured :class:`Plan` the script generator can
-render.
+"Two-layer translation"). It does **not** write CK3 script; it produces a
+structured :class:`Plan` the script generator renders.
 
 Two levers:
 
 - **Soft steering** -- a single aggression modifier tier
   (``ck3llm_aggressive_1`` .. ``_5``), applied for a fixed number of years so
   plans expire on their own.
-- **Hard actions** -- one or two discrete effects chosen from the intent's
-  ``moves`` (war / alliance / peace). Every action carries its guard triggers so
-  an illegal move *silently no-ops* in-game rather than erroring the log or
-  corrupting the save (risk register #4, #7).
+- **Standing orders** -- each hard order (war / alliance) becomes a *variable*
+  the ruler carries (``ck3llm_war_target`` / ``ck3llm_ally_target``). The
+  generated file only sets that data; a static, hand-tested scripted effect
+  (``ck3llm_execute_orders``) re-checks readiness every yearly pulse and acts
+  (CG3). Keeping the action logic out of the generated file shrinks the blast
+  radius and keeps the order alive for the plan's whole term instead of firing
+  once.
 
 Targets are keyed on stable refs (a title key, or ``char:<id>`` for the
-landless) and resolved to CK3 scopes here; numeric character IDs never appear
-in the script unless the target is landless (risk register #12).
+landless) and resolved to CK3 scopes here.
 
 CK3 names (effects, triggers, modifier tiers) live in
-``reference_data/translation.json`` so a mod/version change is a data edit.
-They are **provisional** until a ``script_docs`` dump is captured (risk
-register #10).
+``reference_data/translation.json``; ``validate.py`` checks them against a
+``script_docs`` dump.
 """
 
 from __future__ import annotations
@@ -47,16 +47,13 @@ def load_translation_table(path: str | Path | None = None) -> dict:
 
 
 @dataclass
-class GuardedAction:
-    """A discrete effect plus the triggers that make it safe to attempt."""
+class Order:
+    """A standing order: a target the ruler should keep pursuing."""
 
     kind: str
-    effect: str
+    var_name: str
     target_ref: str
     target_scope: str
-    guards: list[str] = field(default_factory=list)
-    params: dict = field(default_factory=dict)
-    unary: bool = False
 
 
 @dataclass
@@ -72,7 +69,8 @@ class Plan:
     goal: str = ""
     focus: str = ""
     secondary_goal: str = ""
-    actions: list[GuardedAction] = field(default_factory=list)
+    orders: list[Order] = field(default_factory=list)
+    clear_orders: list[str] = field(default_factory=list)
     clear_modifiers: list[str] = field(default_factory=list)
 
 
@@ -122,29 +120,25 @@ def all_tier_names(table: dict) -> list[str]:
     return [f"{prefix}{i}" for i in range(1, count + 1)]
 
 
-def _build_action(move: Move, table: dict) -> GuardedAction | None:
-    spec = (table.get("actions") or {}).get(move.kind)
-    if not spec:
-        return None  # unknown move kind -> nothing to translate
-    unary = bool(spec.get("unary", False))
-    target = ref_to_scope(move.ref, table, spec.get("scope", "title"))
-    guards = [
-        Template(g).safe_substitute(target=target)
-        for g in spec.get("guards", [])
+def all_order_vars(table: dict) -> list[str]:
+    """Every standing-order variable, so the generator can clear stale ones."""
+    return [
+        str(spec["var"])
+        for spec in (table.get("orders") or {}).values()
+        if spec.get("var")
     ]
-    params = (
-        {}
-        if unary
-        else {str(spec.get("target_param", "target")): target}
-    )
-    return GuardedAction(
+
+
+def _build_order(move: Move, table: dict) -> Order | None:
+    spec = (table.get("orders") or {}).get(move.kind)
+    if not spec:
+        return None  # unknown move kind -> no standing order
+    target = ref_to_scope(move.ref, table, spec.get("scope", "title"))
+    return Order(
         kind=move.kind,
-        effect=str(spec.get("effect", "")),
+        var_name=str(spec.get("var", "")),
         target_ref=move.ref,
         target_scope=target,
-        guards=guards,
-        params=params,
-        unary=unary,
     )
 
 
@@ -156,8 +150,8 @@ def translate(
 ) -> Plan:
     """Translate one ruler's intent into a :class:`Plan`.
 
-    Hard actions are capped at ``hard_action_limit`` per cycle so rulers still
-    feel like AI (design principle 6).
+    Standing orders are capped at ``hard_action_limit`` per cycle so rulers
+    still feel like AI (design principle 6).
     """
     table = table if table is not None else load_translation_table()
     title_ref = str(summary.get("title") or "")
@@ -167,13 +161,13 @@ def translate(
     years = int(tier_spec.get("years", table.get("default_modifier_years", 5)))
     limit = int(table.get("hard_action_limit", 2))
 
-    actions: list[GuardedAction] = []
+    orders: list[Order] = []
     for move in intent.moves:
-        action = _build_action(move, table)
-        if action is None:
+        order = _build_order(move, table)
+        if order is None:
             continue
-        actions.append(action)
-        if len(actions) >= limit:
+        orders.append(order)
+        if len(orders) >= limit:
             break
 
     plan_id = make_plan_id(title_ref, current_date)
@@ -187,7 +181,8 @@ def translate(
         goal=intent.five_year_goal,
         focus=intent.focus,
         secondary_goal=intent.secondary_goal,
-        actions=actions,
+        orders=orders,
+        clear_orders=all_order_vars(table),
         clear_modifiers=all_tier_names(table),
     )
 

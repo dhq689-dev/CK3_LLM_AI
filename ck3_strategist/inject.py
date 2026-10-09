@@ -1,17 +1,16 @@
 """Milestone 18: render translated plans into CK3 script.
 
-The static mod in ``mod/ck3llm_strategist`` holds the hand-written parts
-(aggression modifier tiers and the ``on_action`` hook). This module writes only
-the per-cycle ``scripted_effect`` the hook calls. Re-running a cycle overwrites
-that one file; the static files are never touched, so a save that still
-references an old modifier keeps loading (mod stability, risk register #6).
+The static mod holds the hand-written parts (aggression tiers, the ``on_action``
+hook, and the ``ck3llm_execute_orders`` executor). This module writes only the
+per-cycle ``scripted_effect`` the hook calls. Re-running a cycle overwrites that
+one file; the static files are never touched, so a save that still references an
+old modifier keeps loading (mod stability, risk register #6).
 
-The generated effect stamps ``ck3llm_plan_id``/``ck3llm_plan_start`` on each
-ruler (for the feedback loop) and re-applies the plan every yearly pulse. That
-is idempotent for the current levers -- tiers are cleared before being added,
-and ``add_pressed_claim``/``create_alliance`` no-op when already satisfied. A
-plan-id guard that skips re-application errors when the variable is first unset,
-so per-pulse idempotence is deferred to the standing-orders design (CG3).
+The generated file is **data only** (CG3): per ruler it clears/sets the plan
+variables and standing-order targets and applies the aggression tier, then calls
+the static ``ck3llm_execute_orders``. The order *actions* and their readiness
+checks live in that hand-tested static effect, so a bad generated file cannot
+carry a malformed effect and the blast radius stays small.
 
 CK3 requires script files to be UTF-8 **with BOM**, so :func:`write_plans`
 writes ``utf-8-sig``.
@@ -27,6 +26,7 @@ TAB = "\t"
 SCRIPT_ROOT = "common/scripted_effects"
 EFFECT_FILE = "ck3llm_plans.txt"
 DEFAULT_EFFECT_NAME = "ck3llm_apply_plans"
+ORDERS_EFFECT = "ck3llm_execute_orders"
 PLAN_VAR = "ck3llm_plan_id"
 PLAN_START_VAR = "ck3llm_plan_start"
 DEFAULT_MOD_DIR = (
@@ -39,27 +39,6 @@ def _indent(level: int, text: str) -> str:
     return TAB * level + text
 
 
-def _render_effect(action) -> str:
-    if action.unary:
-        return f"{action.effect} = {action.target_scope}"
-    if not action.params:
-        return f"{action.effect} = yes"
-    inner = " ".join(f"{k} = {v}" for k, v in action.params.items())
-    return f"{action.effect} = {{ {inner} }}"
-
-
-def _render_action(action, level: int) -> list[str]:
-    effect = _render_effect(action)
-    if not action.guards:
-        return [_indent(level, effect)]
-    lines = [_indent(level, "if = {"), _indent(level + 1, "limit = {")]
-    lines.extend(_indent(level + 2, guard) for guard in action.guards)
-    lines.append(_indent(level + 1, "}"))
-    lines.append(_indent(level + 1, effect))
-    lines.append(_indent(level, "}"))
-    return lines
-
-
 def _year_of(date: str) -> str | None:
     year = str(date).split(".", 1)[0].strip()
     return year if year.isdigit() else None
@@ -68,15 +47,9 @@ def _year_of(date: str) -> str | None:
 def _render_plan(plan: Plan, debug: bool) -> list[str]:
     if not plan.ruler_scope:
         return []  # landless rulers with no scope cannot be targeted yet
-    set_var = f"set_variable = {{ name = {PLAN_VAR} value = {plan.plan_id} }}"
-    # NOTE: no plan-id guard here. `NOT = { var:ck3llm_plan_id = X }` errors on
-    # the first run when the variable is unset, and every current effect is
-    # idempotent anyway (tiers are cleared, `add_pressed_claim`/`create_alliance`
-    # no-op when already true). Per-pulse idempotence returns with standing
-    # orders (CG3). `remove_character_modifier` is unary in CK3.
     lines = [
         _indent(1, f"{plan.ruler_scope} ?= {{"),
-        _indent(2, set_var),
+        _indent(2, f"set_variable = {{ name = {PLAN_VAR} value = {plan.plan_id} }}"),
     ]
     start_year = _year_of(plan.plan_date)
     if start_year is not None:
@@ -84,16 +57,30 @@ def _render_plan(plan: Plan, debug: bool) -> list[str]:
             f"set_variable = {{ name = {PLAN_START_VAR} value = {start_year} }}"
         )
         lines.append(_indent(2, start_var))
-    for stale in plan.clear_modifiers:
-        lines.append(_indent(2, f"remove_character_modifier = {stale}"))
+
+    # standing orders: clear stale ones, then set the current targets
+    present = {order.var_name for order in plan.orders}
+    for stale in plan.clear_orders:
+        if stale not in present:
+            lines.append(_indent(2, f"remove_variable = {stale}"))
+    for order in plan.orders:
+        lines.append(
+            _indent(
+                2,
+                f"set_variable = {{ name = {order.var_name} "
+                f"value = {order.target_scope} }}",
+            )
+        )
+
+    for tier in plan.clear_modifiers:
+        lines.append(_indent(2, f"remove_character_modifier = {tier}"))
     lines += [
         _indent(2, "add_character_modifier = {"),
         _indent(3, f"modifier = {plan.modifier}"),
         _indent(3, f"years = {plan.modifier_years}"),
         _indent(2, "}"),
     ]
-    for action in plan.actions:
-        lines.extend(_render_action(action, level=2))
+    lines.append(_indent(2, f"{ORDERS_EFFECT} = yes"))
     if debug:
         lines.append(_indent(2, f'debug_log = "ck3llm: plan {plan.plan_id} applied"'))
     lines.append(_indent(1, "}"))

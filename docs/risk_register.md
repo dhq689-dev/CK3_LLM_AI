@@ -20,7 +20,7 @@ risk document.
 | 4 | **The menu can't be fully legal** — CB validity can't be replicated in Python. | High | Low | `accepted` | Treat the menu as *candidate*; in-game triggers are the final arbiter (guarded hard actions). |
 | 5 | **LLMs cluster** — most rulers return "aggression 6–8, unify X". | High | Medium | `mitigating` | Deterministic trait-based aggression baseline; LLM only picks targets and deviations. |
 | 6 | **Mod stability** — deleting a modifier a save references causes load errors. | Medium | Medium | `mitigating` | One permanent generated mod (fixed name); additive-only tiers; never delete referenced modifiers. |
-| 7 | **`start_war` ignores AI readiness** — a forced war may be suicidal. | Medium | Medium | `open` | Cap actions per ruler per cycle; the invented readiness trigger was removed. Readiness re-checks return with the standing-orders design (CG3). |
+| 7 | **`start_war` ignores AI readiness** — a forced war may be suicidal. | Medium | Medium | `closed` | No war is forced: the war order grants a pressed claim and lets vanilla AI decide. The static executor re-checks readiness (`has_claim_on`, `is_alive`, `is_allied_to`) each yearly pulse (CG3). |
 | 8 | **`power_ratio` misleads** — currently excludes allies, liege, co-belligerents. | Medium | Low | `mitigating` | Definition now documented in `roadmap.md`; state it wherever shown. |
 | 9 | **Save write-back fragility** — patching the gamestate and rezipping can corrupt saves. | Medium | High | `open` | Avoid the edit-and-rezip route unless the mod/console routes fail. |
 | 10 | **Modifier/effect names may drift** across versions; not yet smoke-tested in-game. | Medium | Low | `mitigating` | All names live in `reference_data/translation.json` and `mod/ck3llm_strategist/common/` (data, not code); AI dials now sourced from the script_docs-derived modifier list. Verify in-game once. |
@@ -34,7 +34,7 @@ risk document.
 | 18 | **No-plan fallback was missing** — one bad LLM response aborted the whole cycle. | High | High | `closed` | `baseline_intent` + per-ruler `try/except`; failures logged as `fallback: true` (review v4 §6). |
 | 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Low | Low | `closed` | M21/CG5: `Plan` carries the narrative, `localization.py` renders it, and the player sees their own plan as a toast. |
 | 20 | **Evaluation can't attribute causation** — two arms can't separate the LLM from the deterministic dial. | High | Medium | `mitigating` | `compare_arms` three-arm harness (vanilla / baseline / LLM) with seeds; runs pending (review v4 §7). |
-| 21 | **Single generated file blast radius** — one bad token breaks the effect for every ruler. | Medium | Medium | `open` | Name validator (CG1) plus the standing-orders data-only file (CG3) shrink it. |
+| 21 | **Single generated file blast radius** — one bad token breaks the effect for every ruler. | Medium | Medium | `mitigating` | The generated file is now data-only (set/clear variables + tier); action logic lives in the static `ck3llm_execute_orders` (CG3). Name validator (CG1) covers the rest. |
 | 22 | **Player's ruler was being steered** like an AI (tier + hard actions), and shown a plan toast. | Medium | Medium | `closed` | `run_pipeline` reads `played_character` and excludes that ruler; the player toast was dropped. Plans are for AI rulers only (design principle 8). |
 
 ## Injection findings (Milestone 14 — verified on 1.20.0.4)

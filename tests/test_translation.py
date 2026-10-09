@@ -1,10 +1,11 @@
-"""Tests for the intent -> guarded-action translation layer."""
+"""Tests for the intent -> standing-order translation layer."""
 
 from ck3_strategist.strategist import Intent, Move
 from ck3_strategist.translation import (
-    GuardedAction,
+    Order,
     Plan,
     aggression_tier,
+    all_order_vars,
     load_translation_table,
     ref_to_scope,
     translate,
@@ -26,9 +27,9 @@ def _summary(title="k_france"):
     return {"title": title}
 
 
-def test_load_table_has_actions():
+def test_load_table_has_orders():
     table = load_translation_table()
-    assert "war" in table["actions"]
+    assert "war" in table["orders"]
     assert table["aggression_tiers"]["count"] == 5
 
 
@@ -42,14 +43,14 @@ def test_aggression_tier_mapping():
 
 
 def test_aggression_tier_clamps_high_value():
-    table = load_translation_table()
-    assert aggression_tier(99, table) == "ck3llm_aggressive_5"
+    assert aggression_tier(99, load_translation_table()) == "ck3llm_aggressive_5"
 
 
 def test_ref_to_scope_title_and_character():
     table = load_translation_table()
     assert ref_to_scope("k_england", table) == "title:k_england.holder"
     assert ref_to_scope("char:42", table) == "character:42"
+    assert ref_to_scope("k_england", table, "title_self") == "title:k_england"
 
 
 def test_translate_sets_tier_and_years():
@@ -60,21 +61,6 @@ def test_translate_sets_tier_and_years():
     assert plan.modifier_years == 5
 
 
-def test_translate_war_move_is_guarded():
-    plan = translate(
-        _intent(aggression=8, moves=[Move("war", "k_england", "claim")]),
-        _summary(),
-    )
-    assert len(plan.actions) == 1
-    action = plan.actions[0]
-    assert isinstance(action, GuardedAction)
-    assert action.effect == "add_pressed_claim"
-    assert action.target_scope == "title:k_england"  # the claimed title itself
-    assert action.unary is True
-    assert action.params == {}
-    assert action.guards == ["exists = title:k_england"]
-
-
 def test_translate_carries_narrative():
     intent = _intent()
     plan = translate(intent, _summary())
@@ -83,71 +69,54 @@ def test_translate_carries_narrative():
     assert plan.secondary_goal == intent.secondary_goal
 
 
-def test_translate_lists_all_tiers_to_clear():
+def test_translate_war_order_targets_claimed_title():
+    plan = translate(_intent([Move("war", "k_england", "claim")]), _summary())
+    assert len(plan.orders) == 1
+    order = plan.orders[0]
+    assert isinstance(order, Order)
+    assert order.kind == "war"
+    assert order.var_name == "ck3llm_war_target"
+    assert order.target_scope == "title:k_england"  # the claimed title itself
+
+
+def test_translate_alliance_order_targets_holder():
+    plan = translate(_intent([Move("alliance", "k_castile", "f")]), _summary())
+    assert plan.orders[0].var_name == "ck3llm_ally_target"
+    assert plan.orders[0].target_scope == "title:k_castile.holder"
+
+
+def test_translate_landless_alliance_target():
+    plan = translate(_intent([Move("alliance", "char:17313", "s")]), _summary())
+    assert plan.orders[0].target_scope == "character:17313"
+
+
+def test_order_vars_and_tiers_to_clear():
     plan = translate(_intent(), _summary())
+    assert plan.clear_orders == ["ck3llm_war_target", "ck3llm_ally_target"]
+    assert all_order_vars(load_translation_table()) == [
+        "ck3llm_war_target",
+        "ck3llm_ally_target",
+    ]
     assert plan.clear_modifiers == [
-        "ck3llm_aggressive_1",
-        "ck3llm_aggressive_2",
-        "ck3llm_aggressive_3",
-        "ck3llm_aggressive_4",
-        "ck3llm_aggressive_5",
+        f"ck3llm_aggressive_{n}" for n in range(1, 6)
     ]
 
 
-def test_translate_alliance_and_landless_target():
+def test_translate_caps_orders():
     plan = translate(
         _intent(
-            moves=[
-                Move("alliance", "char:17313", "spouse"),
-                Move("alliance", "k_castile", "friend"),
-            ]
-        ),
-        _summary(),
-    )
-    assert [a.kind for a in plan.actions] == ["alliance", "alliance"]
-    assert plan.actions[0].target_scope == "character:17313"
-    assert plan.actions[1].target_scope == "title:k_castile.holder"
-    assert plan.actions[0].unary is True  # create_alliance shorthand
-    assert "NOT = { is_allied_to = character:17313 }" in plan.actions[0].guards
-    assert (
-        "NOT = { is_allied_to = title:k_castile.holder }"
-        in plan.actions[1].guards
-    )
-    assert "character:17313 = { is_alive = yes }" in plan.actions[0].guards
-
-
-def test_translate_drops_unsupported_peace_move():
-    # `end_war` is war-scoped; peace is not translatable yet, so it is dropped
-    plan = translate(
-        _intent(moves=[Move("peace", "k_castile", "war")]), _summary()
-    )
-    assert plan.actions == []
-
-
-def test_translate_caps_hard_actions():
-    plan = translate(
-        _intent(
-            moves=[
+            [
                 Move("war", "k_a", "r"),
                 Move("alliance", "k_b", "r"),
-                Move("peace", "k_c", "r"),
+                Move("alliance", "k_c", "r"),
             ]
         ),
         _summary(),
     )
-    assert len(plan.actions) == 2
+    assert len(plan.orders) == 2
 
 
-def test_translate_skips_unknown_kind():
-    plan = translate(_intent(moves=[Move("gift", "k_a", "r")]), _summary())
-    assert plan.actions == []
-
-
-def test_translate_plan_id_is_numeric_and_date_sensitive():
-    first = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
-    again = translate(_intent(), _summary("k_france"), current_date="1066.1.1")
-    later = translate(_intent(), _summary("k_france"), current_date="1070.1.1")
-    assert isinstance(first.plan_id, int)
-    assert first.plan_id == again.plan_id  # deterministic
-    assert first.plan_id != later.plan_id  # new cycle -> new plan var
-    assert first.plan_date == "1066.1.1"
+def test_translate_drops_unknown_and_unsupported():
+    assert translate(_intent([Move("gift", "k_a", "r")]), _summary()).orders == []
+    peaceful = translate(_intent([Move("peace", "k_a", "r")]), _summary())
+    assert peaceful.orders == []

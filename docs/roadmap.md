@@ -178,13 +178,12 @@ for aggression). The pipeline must never leave a ruler planless.
   dropped during validation.
 - **17 — Translation layer. DONE.** `translation.py` turns an intent into a
   structured `Plan`: an aggression modifier tier (`ck3llm_aggressive_1`..`_5`,
-  applied for a fixed term) plus up to two guarded hard actions from the
-  intent's `moves`. Every action carries its guard triggers (truce /
-  existing-war), every plan lists all tiers to clear first (so tiers don't
-  stack, review v4 §3), and targets are resolved from stable refs to CK3 scopes.
-  All CK3 names live in `reference_data/translation.json` and remain
-  **unverified** pending a `script_docs` dump (see `validate.py`). Script
-  emission is Milestone 18.
+  applied for a fixed term) plus up to two **standing orders** from the intent's
+  `moves`, each a target variable (`ck3llm_war_target` / `ck3llm_ally_target`).
+  Every plan lists all tiers *and* order variables to clear first (so stale
+  state doesn't linger, review v4 §3), and targets are resolved from stable refs
+  to CK3 scopes. All CK3 names live in `reference_data/translation.json` and are
+  checked by `validate.py` against a `script_docs` dump. Emission is M18.
 - **18 — Static mod + generated script. DONE (validated in-game 1.20.0.4).**
   `mod/ck3llm_strategist/` holds the hand-written aggression tiers and the
   `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s into
@@ -241,12 +240,15 @@ correctness precedes features; **CG1–CG2 block trusting the generated file**.
   stays dropped until rewritten in a war scope. For a future forced-war lever
   the verified form is `start_war = { cb = claim_cb target = <holder>
   target_title = title:<key> }`.
-- **CG3 — Standing orders (data-only generated file).** Generate only *data*
-  (target, expiry) and let a static, hand-tested yearly effect re-check
-  readiness and act. Fixes the "everyone declares war in January" pile-up,
-  restores AI prep, keeps plans alive for the full term, and shrinks the blast
-  radius. Claim-granting (`add_pressed_claim`) lets vanilla AI pursue the target
-  itself and sidesteps the CB problem (review v4 §5).
+- **CG3 — Standing orders (data-only generated file). DONE (in-game test
+  pending).** Each hard order becomes a variable (`ck3llm_war_target` =
+  claimed title, `ck3llm_ally_target` = character); the generated file only
+  sets/clears that data and the tier, then calls the static, hand-tested
+  `ck3llm_execute_orders`. That static effect re-checks readiness every yearly
+  pulse (`has_claim_on`, `is_alive`, `is_allied_to`) before acting
+  (`add_pressed_claim` / `create_alliance`). This keeps a malformed generated
+  file from carrying effect logic, keeps the order alive for the plan's term
+  instead of firing once, and lets vanilla AI pursue granted claims.
 - **CG4 — Robustness.** Deterministic no-plan fallback + per-ruler error
   isolation so one bad response cannot abort the whole cycle (review v4 §6).
   *Fallback + isolation now implemented; keep as a regression guard.*

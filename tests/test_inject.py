@@ -4,12 +4,13 @@ from pathlib import Path
 
 from ck3_strategist.inject import (
     DEFAULT_EFFECT_NAME,
+    ORDERS_EFFECT,
     render_plans,
     write_mod_effect,
     write_plans,
 )
 from ck3_strategist.strategist import Intent, Move
-from ck3_strategist.translation import GuardedAction, Plan, translate
+from ck3_strategist.translation import Plan, translate
 
 REPO = Path(__file__).resolve().parent.parent
 MOD = REPO / "mod" / "ck3llm_strategist"
@@ -17,22 +18,12 @@ BOM = b"\xef\xbb\xbf"
 
 
 def _intent(moves=None, aggression=8):
-    return Intent(
-        five_year_goal="G",
-        focus="Military",
-        aggression=aggression,
-        aggression_deviation=0,
-        secondary_goal="S",
-        moves=moves or [],
-    )
+    return Intent("G", "Military", aggression, 0, "S", moves or [])
 
 
-# --- rendering --------------------------------------------------------------
-
-
-def test_render_plan_contains_scope_modifier_and_guard():
+def test_render_plan_is_data_only():
     plan = translate(
-        _intent(moves=[Move("war", "k_england", "claim")]),
+        _intent([Move("war", "k_england", "claim")]),
         {"title": "k_france"},
         "1066.1.1",
     )
@@ -42,30 +33,40 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "title:k_france.holder ?= {" in text
     assert "set_variable = { name = ck3llm_plan_id value =" in text
     assert "set_variable = { name = ck3llm_plan_start value = 1066 }" in text
+    assert "set_variable = { name = ck3llm_war_target value = title:k_england }" in text
+    assert f"{ORDERS_EFFECT} = yes" in text
     assert "add_character_modifier = {" in text
     assert "modifier = ck3llm_aggressive_4" in text
-    assert "years = 5" in text
-    assert "add_pressed_claim = title:k_england" in text
-    assert "exists = title:k_england" in text
-    assert "send_interface_toast" not in text  # plans steer AI rulers only
+    # the generated file carries no action logic or toast
+    assert "add_pressed_claim" not in text
+    assert "create_alliance" not in text
+    assert "send_interface_toast" not in text
 
 
-def test_render_omits_start_year_when_no_date():
-    plan = translate(_intent(), {"title": "k_x"})  # no current_date
-    assert "ck3llm_plan_start" not in render_plans([plan])
+def test_render_clears_only_stale_order_var():
+    plan = translate(
+        _intent([Move("war", "k_england", "claim")]),
+        {"title": "k_france"},
+        "1066.1.1",
+    )
+    text = render_plans([plan])
+    assert "remove_variable = ck3llm_ally_target" in text
+    assert "remove_variable = ck3llm_war_target" not in text
 
 
 def test_render_clears_previous_tiers_before_adding():
     plan = translate(_intent(), {"title": "k_france"}, "1066.1.1")
     text = render_plans([plan])
     for n in range(1, 6):
-        line = f"remove_character_modifier = ck3llm_aggressive_{n}"
-        assert line in text
-    assert "remove_character_modifier = {" not in text  # unary, not a block
-    # all removals come before the new tier is added
+        assert f"remove_character_modifier = ck3llm_aggressive_{n}" in text
     assert text.index("remove_character_modifier") < text.index(
         "add_character_modifier"
     )
+
+
+def test_render_omits_start_year_when_no_date():
+    plan = translate(_intent(), {"title": "k_x"})  # no current_date
+    assert "ck3llm_plan_start" not in render_plans([plan])
 
 
 def test_render_omits_debug_log_when_asked():
@@ -82,29 +83,7 @@ def test_render_skips_plan_without_scope():
         modifier="ck3llm_aggressive_3",
         modifier_years=5,
     )
-    text = render_plans([plan])
-    assert "set_variable" not in text
-
-
-def test_render_action_without_guards_is_boolean():
-    action = GuardedAction(
-        kind="war",
-        effect="do_thing",
-        target_ref="k_a",
-        target_scope="title:k_a.holder",
-    )
-    plan = Plan(
-        ruler_scope="title:k_r.holder",
-        plan_id=2,
-        aggression=5,
-        modifier="m",
-        modifier_years=5,
-        actions=[action],
-    )
-    assert "do_thing = yes" in render_plans([plan])
-
-
-# --- writing ----------------------------------------------------------------
+    assert "set_variable" not in render_plans([plan])
 
 
 def test_write_plans_writes_utf8_bom(tmp_path):
@@ -153,10 +132,11 @@ def test_static_modifiers_define_all_tiers():
         assert f"ck3llm_aggressive_{n} = {{" in text
 
 
-def test_on_action_calls_generated_effect():
-    text = (MOD / "common" / "on_action" / "ck3llm_on_actions.txt").read_text(
-        "utf-8-sig"
-    )
-    assert "yearly_global_pulse = {" in text
-    assert "on_actions = { ck3llm_yearly_pulse }" in text
-    assert f"{DEFAULT_EFFECT_NAME} = yes" in text
+def test_static_orders_effect_exists():
+    text = (
+        MOD / "common" / "scripted_effects" / "ck3llm_orders.txt"
+    ).read_text("utf-8-sig")
+    assert f"{ORDERS_EFFECT} = {{" in text
+    assert "add_pressed_claim = var:ck3llm_war_target" in text
+    assert "create_alliance = var:ck3llm_ally_target" in text
+    assert "has_claim_on = var:ck3llm_war_target" in text

@@ -2,8 +2,10 @@
 
 CK3's ``script_docs`` console command writes ``effects.log``, ``triggers.log``
 and ``modifiers.log`` into the user ``logs`` folder. This module reads those
-(``--logs``) or a normalised JSON dump (``dump``) and reports every effect name
-and guard trigger the translation layer would emit that does not exist.
+(``--logs``) or a normalised JSON dump (``--dump``) and checks every game name
+the translation layer relies on against them. The names are declared in
+``reference_data/translation.json`` under ``validated_names`` so this stays a
+data check, not a parser of our own generated script.
 
 Run directly::
 
@@ -22,24 +24,6 @@ from .translation import load_translation_table
 
 # block headers look like "<name> - description"
 _NAME_LINE = re.compile(r"^([a-z_][a-z0-9_]*)\s+-\s")
-# trigger names inside guard templates look like "<token> ="
-_GUARD_TOKEN = re.compile(r"\b([a-z_][a-z0-9_]*)\s*=")
-_IGNORED_GUARD_TOKENS = {
-    "not",
-    "target",
-    "modifier",
-    "var",
-    "name",
-    "value",
-    "title",
-    "character",
-    "scope",
-    "ratio",
-    "this",
-    "root",
-    "yes",
-    "no",
-}
 
 
 def load_dump(path: str | Path) -> dict:
@@ -85,26 +69,21 @@ def normalize(dump: dict) -> dict[str, set[str]]:
     }
 
 
-def check_effects(table: dict, dump: dict) -> dict[str, str]:
-    """Return ``{move kind: effect}`` for effect names absent from the dump."""
+def _declared(table: dict, kind: str) -> list[str]:
+    return [
+        str(n)
+        for n in ((table.get("validated_names") or {}).get(kind) or [])
+    ]
+
+
+def missing_effects(table: dict, dump: dict) -> list[str]:
     known = normalize(dump).get("effects", set())
-    missing: dict[str, str] = {}
-    for kind, spec in (table.get("actions") or {}).items():
-        effect = str(spec.get("effect", ""))
-        if effect and effect not in known:
-            missing[kind] = effect
-    return missing
+    return sorted(n for n in _declared(table, "effects") if n not in known)
 
 
-def guard_trigger_names(table: dict) -> set[str]:
-    """Best-effort trigger names referenced in guard templates."""
-    names: set[str] = set()
-    for spec in (table.get("actions") or {}).values():
-        for guard in spec.get("guards", []):
-            for token in _GUARD_TOKEN.findall(guard):
-                if token not in _IGNORED_GUARD_TOKENS:
-                    names.add(token)
-    return names
+def missing_triggers(table: dict, dump: dict) -> list[str]:
+    known = normalize(dump).get("triggers", set())
+    return sorted(n for n in _declared(table, "triggers") if n not in known)
 
 
 def check_tiers(table: dict, dump: dict) -> list[str]:
@@ -117,23 +96,20 @@ def check_tiers(table: dict, dump: dict) -> list[str]:
 
 
 def check(table: dict, dump: dict) -> dict:
-    docs = normalize(dump)
     report: dict = {}
-    missing_effects = check_effects(table, dump)
-    if missing_effects:
-        report["effects"] = missing_effects
-    missing_triggers = sorted(
-        t for t in guard_trigger_names(table) if t not in docs.get("triggers", set())
-    )
-    if missing_triggers:
-        report["triggers"] = missing_triggers
+    effects = missing_effects(table, dump)
+    if effects:
+        report["effects"] = effects
+    triggers = missing_triggers(table, dump)
+    if triggers:
+        report["triggers"] = triggers
     return report
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="ck3_strategist.validate",
-        description="Check translation.json names against a script_docs dump.",
+        description="Check translation names against a script_docs dump.",
     )
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--logs", help="CK3 logs folder containing effects.log etc.")
@@ -151,11 +127,7 @@ def main(argv: list[str] | None = None) -> None:
     if report:
         print(json.dumps(report, indent=2))
         sys.exit(1)
-    print(
-        "all translation effect and trigger names found in the dump "
-        f"({len(normalize(dump).get('effects', set()))} effects, "
-        f"{len(normalize(dump).get('triggers', set()))} triggers)"
-    )
+    print("all declared effect and trigger names found in the dump")
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .strategist import Intent
-from .translation import GuardedAction, Plan
+from .translation import Order, Plan
 
 PLAN_INTERVAL_YEARS = 5
 
@@ -68,17 +68,14 @@ def intent_from_plan(plan: Plan) -> Intent:
 
 
 def plan_from_dict(d: dict) -> Plan:
-    actions = [
-        GuardedAction(
-            kind=str(a.get("kind", "")),
-            effect=str(a.get("effect", "")),
-            target_ref=str(a.get("target_ref", "")),
-            target_scope=str(a.get("target_scope", "")),
-            guards=list(a.get("guards") or []),
-            params=dict(a.get("params") or {}),
-            unary=bool(a.get("unary", False)),
+    orders = [
+        Order(
+            kind=str(o.get("kind", "")),
+            var_name=str(o.get("var_name", "")),
+            target_ref=str(o.get("target_ref", "")),
+            target_scope=str(o.get("target_scope", "")),
         )
-        for a in (d.get("actions") or [])
+        for o in (d.get("orders") or [])
     ]
     return Plan(
         ruler_scope=str(d.get("ruler_scope", "")),
@@ -90,7 +87,8 @@ def plan_from_dict(d: dict) -> Plan:
         goal=str(d.get("goal", "")),
         focus=str(d.get("focus", "")),
         secondary_goal=str(d.get("secondary_goal", "")),
-        actions=actions,
+        orders=orders,
+        clear_orders=list(d.get("clear_orders") or []),
         clear_modifiers=list(d.get("clear_modifiers") or []),
     )
 

@@ -70,11 +70,11 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–22 are complete and tested (190
+Phase 1, Phase 2, and Phase 3 milestones 14–22 are complete and tested (188
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
-aggression baseline (M16), the translation layer maps intent → modifier tier +
-guarded hard actions and clears stale tiers (M17), the static mod + generated
+aggression baseline (M16), the translation layer maps intent → aggression tier +
+standing orders and clears stale state (M17), the static mod + generated
 `scripted_effect` render path exists and is **validated in-game** (M18;
 injection hook, tier apply/clear/expire, hard actions, and feedback variables
 all confirmed on CK3 1.20.0.4), `ck3llm_*` plan variables are read back into the
@@ -87,6 +87,7 @@ the **player's ruler is excluded** from planning (plans steer AI rulers only).
 A third-party review (`docs/review_notes_v4.txt`) is folded into the
 **"Correctness gate"** in `docs/roadmap.md` (CG1–CG7) and
 `docs/risk_register.md` (#16–#21). **CG1 (name validation), CG2 (hard actions),
-and CG5 (localized goals) are done.** Outstanding: **CG3 (standing orders)**,
-**CG6 (three-arm observer A/B — needs an LLM install)**, and **CG7 (menu
-adjacency — needs static map data)**.
+CG3 (standing orders), and CG5 (localized goals) are done.** Outstanding:
+**CG6 (three-arm observer A/B — needs an LLM install)** and **CG7 (menu
+adjacency — needs static map data)**. CG3's static executor still needs an
+in-game smoke test.

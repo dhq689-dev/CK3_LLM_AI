@@ -52,9 +52,8 @@ def test_plan_store_roundtrip(tmp_path):
     got = PlanStore.load(path).get("k_france")
     assert got is not None
     assert got.plan_id == _plan().plan_id
-    assert len(got.actions) == 1
-    assert got.actions[0].effect == "add_pressed_claim"
-    assert got.actions[0].unary is True
+    assert len(got.orders) == 1
+    assert got.orders[0].var_name == "ck3llm_war_target"
 
 
 def test_plan_store_load_missing_is_empty(tmp_path):
