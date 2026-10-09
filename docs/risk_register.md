@@ -20,7 +20,7 @@ risk document.
 | 4 | **The menu can't be fully legal** — CB validity can't be replicated in Python. | High | Low | `accepted` | Treat the menu as *candidate*; in-game triggers are the final arbiter (guarded hard actions). |
 | 5 | **LLMs cluster** — most rulers return "aggression 6–8, unify X". | High | Medium | `mitigating` | Deterministic trait-based aggression baseline; LLM only picks targets and deviations. |
 | 6 | **Mod stability** — deleting a modifier a save references causes load errors. | Medium | Medium | `mitigating` | One permanent generated mod (fixed name); additive-only tiers; never delete referenced modifiers. |
-| 7 | **`start_war` ignores AI readiness** — a forced war may be suicidal. | Medium | Medium | `mitigating` | Guard hard actions with truce / existing-war / strength checks; cap actions per ruler per cycle. |
+| 7 | **`start_war` ignores AI readiness** — a forced war may be suicidal. | Medium | Medium | `open` | Cap actions per ruler per cycle; the invented readiness trigger was removed. Readiness re-checks return with the standing-orders design (CG3). |
 | 8 | **`power_ratio` misleads** — currently excludes allies, liege, co-belligerents. | Medium | Low | `mitigating` | Definition now documented in `roadmap.md`; state it wherever shown. |
 | 9 | **Save write-back fragility** — patching the gamestate and rezipping can corrupt saves. | Medium | High | `open` | Avoid the edit-and-rezip route unless the mod/console routes fail. |
 | 10 | **Modifier/effect names may drift** across versions; not yet smoke-tested in-game. | Medium | Low | `mitigating` | All names live in `reference_data/translation.json` and `mod/ck3llm_strategist/common/` (data, not code); AI dials now sourced from the script_docs-derived modifier list. Verify in-game once. |
@@ -29,6 +29,12 @@ risk document.
 | 13 | **Version drift** — save format changes between game versions. | Low | Medium | `mitigating` | Verified against 1.17 and 1.19; drift points documented in `../parser_implementation.md` §0. |
 | 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `accepted` | Fine for a turn-based loop; optimise later (skip unchanged realms, smaller model). |
 | 15 | **Console `run <file>`** behaviour unconfirmed. | Medium | Low | `open` | Verify it reads from a user `run/` folder before relying on it for a live loop. |
+| 16 | **Hard actions are unverified and likely wrong** — `start_war` lacks a CB, `end_war` is emitted in a character scope, trigger names were invented. | High | High | `open` | CG1/CG2: validate every name against a `script_docs` dump (`validate.py`), fix the actions, run the in-game smoke test. |
+| 17 | **Modifier tiers stacked across cycles** (distinct keys coexisted and partly cancelled). | — | Medium | `closed` | The generator now clears all five tiers before applying the new one (review v4 §3). |
+| 18 | **No-plan fallback was missing** — one bad LLM response aborted the whole cycle. | High | High | `closed` | `baseline_intent` + per-ruler `try/except`; failures logged as `fallback: true` (review v4 §6). |
+| 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Medium | Low | `open` | Localize goals (M21) or wire `focus` to AI dials (review v4 §1). |
+| 20 | **Evaluation can't attribute causation** — two arms can't separate the LLM from the deterministic dial. | High | Medium | `mitigating` | `compare_arms` three-arm harness (vanilla / baseline / LLM) with seeds; runs pending (review v4 §7). |
+| 21 | **Single generated file blast radius** — one bad token breaks the effect for every ruler. | Medium | Medium | `open` | Name validator (CG1) plus the standing-orders data-only file (CG3) shrink it. |
 
 ## Injection findings (Milestone 14 — verified on 1.20.0.4)
 

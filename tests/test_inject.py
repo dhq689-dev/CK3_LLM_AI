@@ -55,6 +55,18 @@ def test_render_omits_start_year_when_no_date():
     assert "ck3llm_plan_start" not in render_plans([plan])
 
 
+def test_render_clears_previous_tiers_before_adding():
+    plan = translate(_intent(), {"title": "k_france"}, "1066.1.1")
+    text = render_plans([plan])
+    for n in range(1, 6):
+        line = f"remove_character_modifier = {{ modifier = ck3llm_aggressive_{n} }}"
+        assert line in text
+    # all removals come before the new tier is added
+    assert text.index("remove_character_modifier") < text.index(
+        "add_character_modifier"
+    )
+
+
 def test_render_omits_debug_log_when_asked():
     plan = translate(_intent(), {"title": "k_x"}, "d")
     assert "debug_log" in render_plans([plan])

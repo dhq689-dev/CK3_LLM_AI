@@ -81,3 +81,15 @@ def test_compare_without_records_has_no_adherence(tmp_path):
     assert ev.adherence == []
     assert ev.adherence_rate == 0.0
     assert "wars_started" in ev.to_dict()
+
+
+def test_compare_arms_scores_each(tmp_path):
+    from ck3_strategist.evaluate import compare_arms
+
+    llm_after = _after_save(tmp_path)
+    baseline = tmp_path / "baseline.txt"
+    baseline.write_text(FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+    arms = compare_arms(FIXTURE, {"llm": llm_after, "baseline": baseline})
+    assert set(arms) == {"llm", "baseline"}
+    assert arms["llm"].wars_started == [900000001]
+    assert arms["baseline"].wars_started == []

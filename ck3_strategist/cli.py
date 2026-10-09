@@ -106,14 +106,19 @@ def run_pipeline(
     if llm_call is None:
         return summaries, None, None
 
-    from .strategist import Strategist
+    from .strategist import Strategist, baseline_intent
 
     intents = []
     entries: list[dict] = []
     for snap, summary in zip(selected, summaries, strict=False):
         exchanges: list[dict] = []
         strategist = Strategist(llm_call, on_exchange=exchanges.append)
-        intent = strategist.plan(summary)
+        fallback_error: str | None = None
+        try:
+            intent = strategist.plan(summary)
+        except Exception as e:  # noqa: BLE001 - never leave a ruler planless
+            fallback_error = str(e)
+            intent = baseline_intent(summary)
         intents.append(intent)
         entries.append(
             {
@@ -122,6 +127,8 @@ def run_pipeline(
                 "title": summary.get("title"),
                 "seed": seed,
                 "model": model,
+                "fallback": fallback_error is not None,
+                "fallback_error": fallback_error,
                 "exchanges": exchanges,
                 "intent": asdict(intent),
             }

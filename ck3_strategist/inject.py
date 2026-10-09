@@ -77,6 +77,9 @@ def _render_plan(plan: Plan, debug: bool) -> list[str]:
             f"set_variable = {{ name = {PLAN_START_VAR} value = {start_year} }}"
         )
         lines.append(_indent(3, start_var))
+    remove_tmpl = "remove_character_modifier = {{ modifier = {} }}"
+    for stale in plan.clear_modifiers:
+        lines.append(_indent(3, remove_tmpl.format(stale)))
     lines += [
         _indent(3, "add_character_modifier = {"),
         _indent(4, f"modifier = {plan.modifier}"),

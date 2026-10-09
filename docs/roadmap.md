@@ -177,16 +177,20 @@ for aggression). The pipeline must never leave a ruler planless.
   structured `Plan`: an aggression modifier tier (`ck3llm_aggressive_1`..`_5`,
   applied for a fixed term) plus up to two guarded hard actions from the
   intent's `moves`. Every action carries its guard triggers (truce /
-  existing-war / strength for `start_war`) so illegal moves silently no-op.
-  Targets are resolved from stable refs to CK3 scopes here. All CK3 names live
-  in `reference_data/translation.json` and are **provisional** pending a
-  `script_docs` dump. Script emission is Milestone 18.
-- **18 — Static mod + generated script. DONE.** `mod/ck3llm_strategist/` holds
-  the hand-written aggression tiers and the `yearly_global_pulse` hook;
-  `inject.py` renders each cycle's `Plan`s into
-  `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), stamping a numeric
-  `ck3llm_plan_id` for idempotence across pulses. `--mod-dir` wires it into the
-  CLI (writes `plans.json` too). In-game smoke test still pending.
+  existing-war), every plan lists all tiers to clear first (so tiers don't
+  stack, review v4 §3), and targets are resolved from stable refs to CK3 scopes.
+  All CK3 names live in `reference_data/translation.json` and remain
+  **unverified** pending a `script_docs` dump (see `validate.py`). Script
+  emission is Milestone 18.
+- **18 — Static mod + generated script. IN PROGRESS (in-game test pending).**
+  `mod/ck3llm_strategist/` holds the hand-written aggression tiers and the
+  `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s into
+  `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), clearing stale tiers,
+  stamping a numeric `ck3llm_plan_id` for idempotence, and recording
+  `ck3llm_plan_start`. `--mod-dir` wires it into the CLI (writes `plans.json`
+  too). **The hard actions and AI dials have never executed in-game** (review
+  v4 §2); the generated file is not trusted until it passes the name validator
+  and a smoke test.
 - **19 — Feedback loop. DONE.** The generated effect stamps `ck3llm_plan_id`
   and `ck3llm_plan_start`; the parser reads `ck3llm_*` character variables back
   into `Character.plan_vars`, the summary exposes `previous_plan`
@@ -194,12 +198,49 @@ for aggression). The pipeline must never leave a ruler planless.
   has been pursuing and since when.
 - **20 — Evaluation. HARNESS DONE (runs pending).** `runlog.py` writes a JSONL
   cycle log (prompts, raw responses, intents, plans, seed/model); `evaluate.py`
-  scores two saves (wars started/ended, realm growth) and plan adherence (did a
-  war for each chosen target title start?); `--log-dir`/`--seed` make a
-  vanilla-vs-LLM A/B reproducible. Actual in-game observer runs still pending.
+  scores saves (wars started/ended, realm growth) and plan adherence (did a war
+  for each chosen target title start?). `compare_arms` supports the required
+  **three arms** — vanilla / baseline-only / LLM — so a difference can be
+  attributed to the LLM rather than the deterministic dial, and
+  `--log-dir`/`--seed` make each arm reproducible. Actual in-game observer runs
+  (with several seeds) still pending.
 - **21 — Narrative / localization.** Generate a localization file so plans
-  surface in-game (toast/chronicle entry). Doubles as a debugging aid.
+  surface in-game (toast/chronicle entry). Doubles as a debugging aid. Also the
+  home for `five_year_goal` / `secondary_goal`, which carry no mechanical weight
+  today (review v4 §1).
 - **22 — Cadence & save watcher.** 5-year gating and save detection.
+
+## Correctness gate (from review v4 — do before more Phase-3 features)
+
+The review found that the last mile is unvalidated. These are ordered so
+correctness precedes features; **CG1–CG2 block trusting the generated file**.
+
+- **CG1 — Verify CK3 names.** Run `script_docs` for the target version; normalise
+  its output to `{"effects": [...], "triggers": [...], "modifiers": [...]}`;
+  run `python -m ck3_strategist.validate <dump>` and fix every unknown name.
+  Without this the hard actions are guesswork. (Validator scaffold exists;
+  trigger validation needs structured guards.)
+- **CG2 — Fix the hard actions** against the dump: `start_war` needs a
+  `casus_belli` (and usually a target title); `end_war` runs in a **war** scope;
+  confirm the alliance effect; replace the invented `power_ratio_at_least`
+  (already removed). Then run the M18 in-game smoke test.
+- **CG3 — Standing orders (data-only generated file).** Generate only *data*
+  (target, expiry) and let a static, hand-tested yearly effect re-check
+  readiness and act. Fixes the "everyone declares war in January" pile-up,
+  restores AI prep, keeps plans alive for the full term, and shrinks the blast
+  radius. Claim-granting (`add_pressed_claim`) lets vanilla AI pursue the target
+  itself and sidesteps the CB problem (review v4 §5).
+- **CG4 — Robustness.** Deterministic no-plan fallback + per-ruler error
+  isolation so one bad response cannot abort the whole cycle (review v4 §6).
+  *Fallback + isolation now implemented; keep as a regression guard.*
+- **CG5 — Localize goals.** Send `five_year_goal` / `secondary_goal` to
+  localization (folds into M21) so the LLM's narrative isn't silently dropped.
+- **CG6 — Measurement.** Run the three-arm, multi-seed A/B, with a
+  counterfactual ("how often did vanilla attack the same target anyway?"), plus
+  the cheap dose-response test (50 years, all kings tier 1 vs tier 5) to see if
+  the soft lever does anything.
+- **CG7 — Menu quality.** Province adjacency from the game install (retires
+  risk #3); CB validity where feasible.
 
 ## Open items to verify (before building on them)
 

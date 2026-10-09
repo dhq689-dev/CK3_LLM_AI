@@ -1,0 +1,64 @@
+Review: how effectively would this govern CK3’s AI?
+
+Short answer: as built, it would nudge the AI rather than govern it, and nobody has measured whether even the nudge works. The pipeline up to the LLM is solid, with 145 tests passing and a clean parser→JSON→LLM boundary. The weak part is the last step, where intent becomes game behaviour.
+
+I read the source this time and rendered a sample plan. I haven’t run CK3, and the effect and trigger names below come from my memory of CK3 scripting. Check each against your script_docs dump rather than taking my word.
+
+1. Most of the LLM’s output never reaches the game
+
+translate() and inject.py only use aggression and moves. focus, five_year_goal and secondary_goal are discarded.
+
+Aggression: the LLM can only move the trait-derived baseline by ±3, then it’s bucketed into 5 tiers. Often that changes nothing or one tier.
+Moves: at most 2 per ruler, and only war, alliance or peace.
+
+So “the LLM acts as the ruler” isn’t true yet. Each king gets a personality dial plus up to two one-off actions. Marriage, succession, vassal management and religion aren’t in the move set at all.
+
+2. The hard actions look wrong, and have never run in-game
+
+The rendered output for a war and an alliance looks like this:
+
+start_war = { target = title:k_england.holder }
+create_alliance = { target = title:k_castille.holder }
+As far as I know, start_war needs a cb (and usually target_title for claim wars), so this probably errors.
+create_alliance likely needs allied_through_owner.
+end_war runs in a war scope, not a character scope, so the peace action as written probably doesn’t work.
+The guards power_ratio_at_least, has_truce_with and has_alliance_with don’t match any trigger names I recognise. is_allied_to is the one I’d expect for alliances.
+All plans go into one ck3llm_apply_plans effect. A bad token could break the file for every ruler, including the soft modifiers. Validate the generated file against the dump in CI, or isolate per-ruler effects.
+
+The smoke test only proved the mechanism (hook fires, ?= works, a stat modifier applies). The ai_* dials and all three hard actions have never executed. Your own roadmap marks the Milestone 18 in-game test as pending.
+
+3. Modifier tiers stack
+
+Nothing calls remove_character_modifier. I rendered two cycles for the same king and got ck3llm_aggressive_4 then ck3llm_aggressive_1. Since they’re different keys, I believe both would stay active and partly cancel. The generated effect should remove all five tiers before adding the new one.
+
+4. The soft lever amplifies what vanilla already does
+
+The baseline comes from traits (wrathful +2, craven −2, and so on), and vanilla AI already acts on those traits. The tiers amplify existing personality. They can’t give direction such as “attack England, not Spain”, and that direction only comes from the two hard actions.
+
+5. Hard actions are one-shot, not a plan
+
+A start_war fires once on the first pulse after load. That means:
+
+All ~100 kings can start wars in the same January.
+A forced war skips the AI’s own preparation.
+Once the war ends, the ruler goes back to vanilla behaviour, so a five-year plan collapses into a single event.
+
+Two changes would help:
+
+Standing orders. The generated file would only set data (target, expiry), and a static, hand-tested yearly effect would re-check readiness each year before acting. That also shrinks the blast radius from section 2.
+Claims as a lever. Granting a pressed claim (add_pressed_claim, which I believe is real) lets vanilla AI pursue the target itself, which keeps the AI feel and sidesteps the CB problem.
+6. Robustness gaps
+No fallback. The roadmap says no ruler is ever left planless, but cli.py has no fallback. Strategist.plan() raises after retries, and the loop doesn’t catch it. One bad response among ~100 rulers aborts the cycle after minutes of LLM time and writes nothing.
+Sequential LLM calls. They run one at a time.
+Menu quality. War targets are every claim on a title someone else holds, with no adjacency, reachability or CB check. The LLM is mostly picking from a claim list.
+7. The evaluation can’t prove the LLM helps
+
+evaluate.py compares vanilla against LLM. It needs a third arm, baseline-only (trait aggression, no LLM), or you can’t tell whether the LLM or the deterministic dial caused any difference. You also need several seeds per arm, because CK3 diverges between runs. The adherence score needs a counterfactual: how often did vanilla attack the same targets anyway?
+
+What I’d do next
+Run script_docs, write a validator that checks every name in translation.json and the generated file against it, and fix the three actions.
+Add the tier removal fix.
+Run a dose-response test: observer mode, 50 years, all kings at tier 1 versus tier 5. Comparing war counts answers whether the soft lever does anything, and it’s cheap.
+Either wire focus into other ai_* dials (for example Stewardship to ai_greed) or drop it from the contract. Send goals to localization (your Milestone 21).
+Move to standing orders plus claim-granting, then add per-ruler error isolation and the deterministic fallback.
+Re-run the evaluation as three arms with multiple seeds.

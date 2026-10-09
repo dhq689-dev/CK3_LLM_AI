@@ -9,6 +9,7 @@ from ck3_strategist.strategist import (
     IntentError,
     Move,
     Strategist,
+    baseline_intent,
     build_prompt,
     parse_intent,
 )
@@ -313,3 +314,25 @@ def test_strategist_records_retry_exchanges():
     Strategist(mock_llm, on_exchange=exchanges.append).plan(_summary())
     assert len(exchanges) == 2
     assert exchanges[1]["retry_error"]  # second attempt carries the error
+
+
+def test_baseline_intent_uses_baseline_and_best_skill():
+    intent = baseline_intent(
+        _summary(aggression_baseline=7, skills={"diplomacy": 3, "martial": 9})
+    )
+    assert intent.aggression == 7
+    assert intent.aggression_deviation == 0
+    assert intent.focus == "Military"
+    assert intent.moves == []
+
+
+def test_baseline_intent_handles_missing_data():
+    intent = baseline_intent({})
+    assert intent.aggression == 5
+    assert intent.focus in (
+        "Military",
+        "Diplomacy",
+        "Stewardship",
+        "Intrigue",
+        "Learning",
+    )

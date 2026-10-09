@@ -35,6 +35,13 @@ _MOVE_LIST_KEY = {
     "alliance": "alliance_candidates",
     "peace": "peace_options",
 }
+_SKILL_TO_FOCUS = {
+    "diplomacy": "Diplomacy",
+    "martial": "Military",
+    "stewardship": "Stewardship",
+    "intrigue": "Intrigue",
+    "learning": "Learning",
+}
 _MAX_DEVIATION = 3
 _DEFAULT_BASELINE = 5
 
@@ -282,6 +289,36 @@ def _menu_refs(summary: dict) -> dict[str, set[str]] | None:
             if isinstance(item, dict) and item.get("ref")
         }
     return refs
+
+
+def baseline_intent(summary: dict) -> Intent:
+    """A deterministic plan for when the LLM is unavailable.
+
+    The pipeline must never leave a ruler planless (roadmap, "No-plan
+    fallback"): use the trait-derived aggression baseline and a focus matching
+    the ruler's strongest skill, with no hard actions. This is also the
+    "baseline-only" arm of the evaluation (review v4 §7).
+    """
+    baseline = summary.get("aggression_baseline")
+    if not isinstance(baseline, int):
+        baseline = _DEFAULT_BASELINE
+
+    focus = _FOCUS_VALUES[0]
+    best = -1
+    for skill, value in (summary.get("skills") or {}).items():
+        mapped = _SKILL_TO_FOCUS.get(str(skill).lower())
+        if mapped is not None and isinstance(value, int) and value > best:
+            best = value
+            focus = mapped
+
+    return Intent(
+        five_year_goal="Preserve and consolidate the realm",
+        focus=focus,
+        aggression=baseline,
+        aggression_deviation=0,
+        secondary_goal="Avoid overextension",
+        moves=[],
+    )
 
 
 class Strategist:

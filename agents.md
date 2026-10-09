@@ -47,6 +47,7 @@ ck3_strategist/
   inject.py        render plans -> CK3 scripted_effect (utf-8-sig)
   runlog.py        JSONL cycle logging (prompts/outputs/seeds)
   evaluate.py      observer-mode evaluation metrics (wars/growth/adherence)
+  validate.py      script_docs name validation for the translation table
   cli.py           command-line entry point
 reference_data/    static tables (relationships.json, aggression_traits.json,
                    translation.json)
@@ -68,13 +69,19 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–20 are complete and tested (145
+Phase 1, Phase 2, and Phase 3 milestones 14–20 are complete and tested (157
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
 aggression baseline (M16), the translation layer maps intent → modifier tier +
-guarded hard actions (M17), the static mod + generated `scripted_effect` render
-path exists (M18), `ck3llm_*` plan variables are read back into the briefing
-as `previous_plan` (M19), and the evaluation harness (cycle logging + A/B
-metrics) exists (M20). In-game smoke test and observer-mode A/B runs against
-CK3 are still pending. Next is **Milestone 21 — narrative / localization** in
-`docs/roadmap.md`.
+guarded hard actions and clears stale tiers (M17), the static mod + generated
+`scripted_effect` render path exists (M18, in-game test pending), `ck3llm_*` plan
+variables are read back into the briefing as `previous_plan` (M19), and the
+evaluation harness (cycle logging + three-arm A/B metrics) exists (M20). A
+deterministic no-plan fallback + per-ruler error isolation are in place.
+
+A third-party review (`docs/review_notes_v4.txt`) found the last mile
+unvalidated: the hard actions have never executed in-game and their names are
+unverified. Its findings are folded into the **"Correctness gate"** in
+`docs/roadmap.md` (CG1–CG7) and `docs/risk_register.md` (#16–#21). Work CG1–CG2
+(validate names against a `script_docs` dump, fix the hard actions) before more
+Phase-3 features. Otherwise, next is **M21 — narrative / localization**.

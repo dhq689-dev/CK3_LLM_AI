@@ -74,8 +74,18 @@ def test_translate_war_move_is_guarded():
     joined = " ".join(action.guards)
     assert "has_truce_with" in joined
     assert "is_at_war_with" in joined
-    assert "power_ratio_at_least" in joined
     assert "title:k_england.holder" in joined
+
+
+def test_translate_lists_all_tiers_to_clear():
+    plan = translate(_intent(), _summary())
+    assert plan.clear_modifiers == [
+        "ck3llm_aggressive_1",
+        "ck3llm_aggressive_2",
+        "ck3llm_aggressive_3",
+        "ck3llm_aggressive_4",
+        "ck3llm_aggressive_5",
+    ]
 
 
 def test_translate_alliance_and_landless_target():

@@ -31,6 +31,46 @@ def test_run_pipeline_with_mock_llm():
     assert plans[0].ruler_scope.startswith("title:")
 
 
+def test_run_pipeline_falls_back_when_llm_fails(tmp_path):
+    def bad_llm(prompt: str) -> str:
+        raise RuntimeError("ollama down")
+
+    log_dir = tmp_path / "logs"
+    summaries, intents, plans = run_pipeline(
+        FIXTURE, tier=1, llm_call=bad_llm, log_dir=str(log_dir)
+    )
+    assert len(intents) == len(summaries)
+    assert all(i.moves == [] for i in intents)  # deterministic fallback
+    from ck3_strategist.runlog import load_cycle
+
+    records = load_cycle(log_dir / "cycle_918-11-5.jsonl")
+    assert all(r["fallback"] for r in records)
+
+
+def test_run_pipeline_isolates_one_bad_ruler(tmp_path):
+    calls = {"n": 0}
+
+    def flaky(prompt: str) -> str:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return (
+                '{"five_year_goal": "X", "focus": "Military", '
+                '"secondary_goal": "Y", "aggression_deviation": 0}'
+            )
+        raise RuntimeError("boom")
+
+    log_dir = tmp_path / "logs"
+    summaries, intents, plans = run_pipeline(
+        FIXTURE, tier=1, llm_call=flaky, log_dir=str(log_dir)
+    )
+    assert len(intents) == 2
+    from ck3_strategist.runlog import load_cycle
+
+    records = load_cycle(log_dir / "cycle_918-11-5.jsonl")
+    assert records[0]["fallback"] is False
+    assert records[1]["fallback"] is True
+
+
 def test_extract_gamestate_plaintext():
     path, is_temp = extract_gamestate(FIXTURE)
     assert path == FIXTURE

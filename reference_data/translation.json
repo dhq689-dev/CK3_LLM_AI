@@ -1,5 +1,6 @@
 {
-  "_comment": "Translation table for the CK3 injection layer. These are DATA, not code, so a mod/version change is an edit here. Effect/trigger/modifier names are PROVISIONAL: replace them with a script_docs dump for the target game version (risk register #10, docs/roadmap.md M17). Strings are string.Template templates (placeholders: $ref, $id, $target, $ratio).",
+  "_comment": "Translation table for the CK3 injection layer. These are DATA, not code, so a mod/version change is an edit here. Strings are string.Template templates (placeholders: $ref, $id, $target).",
+  "_provisional": "The effect and trigger names below are UNVERIFIED. Only the M14 mechanism (hook, ?=, a stat modifier) has run in-game; the hard actions have never executed. Validate every name against a script_docs dump (see ck3_strategist/validate.py) before relying on them. `start_war` in particular needs a casus_belli and usually a target_title. Readiness guarding is deliberately omitted here and will return with the standing-orders design (docs/roadmap.md, review v4).",
   "aggression_tiers": {
     "prefix": "ck3llm_aggressive_",
     "count": 5,
@@ -17,12 +18,10 @@
     "war": {
       "effect": "start_war",
       "target_param": "target",
-      "min_power_ratio": 1.0,
       "guards": [
         "exists = $target",
         "NOT = { has_truce_with = { target = $target } }",
-        "NOT = { is_at_war_with = { target = $target } }",
-        "power_ratio_at_least = { target = $target ratio = $ratio }"
+        "NOT = { is_at_war_with = { target = $target } }"
       ]
     },
     "alliance": {

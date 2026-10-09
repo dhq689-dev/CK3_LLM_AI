@@ -69,6 +69,7 @@ class Plan:
     modifier_years: int
     plan_date: str = ""
     actions: list[GuardedAction] = field(default_factory=list)
+    clear_modifiers: list[str] = field(default_factory=list)
 
 
 def make_plan_id(ruler_ref: str, current_date: str = "") -> int:
@@ -103,13 +104,25 @@ def aggression_tier(aggression: int, table: dict) -> str:
     return f"{prefix}{min(tier, count)}"
 
 
+def all_tier_names(table: dict) -> list[str]:
+    """Every aggression tier name, so the generator can clear stale ones.
+
+    Tiers are distinct modifier keys, so without an explicit removal an old tier
+    stays active alongside the new one and they partly cancel (review v4 §3).
+    """
+    spec = table.get("aggression_tiers", {})
+    prefix = str(spec.get("prefix", "ck3llm_aggressive_"))
+    count = int(spec.get("count", 5))
+    return [f"{prefix}{i}" for i in range(1, count + 1)]
+
+
 def _build_action(move: Move, table: dict) -> GuardedAction | None:
     spec = (table.get("actions") or {}).get(move.kind)
     if not spec:
         return None  # unknown move kind -> nothing to translate
     target = ref_to_scope(move.ref, table)
     guards = [
-        Template(g).safe_substitute(target=target, ratio=spec.get("min_power_ratio"))
+        Template(g).safe_substitute(target=target)
         for g in spec.get("guards", [])
     ]
     return GuardedAction(
@@ -159,6 +172,7 @@ def translate(
         modifier_years=years,
         plan_date=current_date,
         actions=actions,
+        clear_modifiers=all_tier_names(table),
     )
 
 

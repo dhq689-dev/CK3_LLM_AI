@@ -135,14 +135,9 @@ def plan_adherence(
     return rows
 
 
-def compare(
-    before_path: str | Path,
-    after_path: str | Path,
-    records: list[dict] | None = None,
+def _evaluate(
+    before: WorldGraph, after: WorldGraph, records: list[dict] | None
 ) -> Evaluation:
-    """Compare two gamestates (and optionally a logged cycle)."""
-    before = load_graph(before_path)
-    after = load_graph(after_path)
     started, ended = wars_delta(before, after)
     return Evaluation(
         wars_started=started,
@@ -152,13 +147,57 @@ def compare(
     )
 
 
+def compare(
+    before_path: str | Path,
+    after_path: str | Path,
+    records: list[dict] | None = None,
+) -> Evaluation:
+    """Compare two gamestates (and optionally a logged cycle)."""
+    return _evaluate(load_graph(before_path), load_graph(after_path), records)
+
+
+def compare_arms(
+    before_path: str | Path,
+    arms: dict[str, str | Path],
+    records: list[dict] | None = None,
+) -> dict[str, Evaluation]:
+    """Score several after-saves against one baseline save.
+
+    ``arms`` maps an arm name (``"vanilla"``, ``"baseline"``, ``"llm"``) to its
+    resulting gamestate. Three arms are what let a difference be attributed to
+    the LLM rather than the deterministic baseline: the ``baseline`` arm runs the
+    fallback plan with no LLM at all (review v4 §7).
+    """
+    before = load_graph(before_path)
+    return {
+        name: _evaluate(before, load_graph(after), records)
+        for name, after in arms.items()
+    }
+
+
+def _parse_arm(value: str) -> tuple[str, str]:
+    name, _, path = value.partition("=")
+    if not name or not path:
+        raise argparse.ArgumentTypeError("expected name=path")
+    return name, path
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="ck3_strategist.evaluate",
         description="Score an observer-mode A/B run (Milestone 20).",
     )
     parser.add_argument("before", help="gamestate at the start of the window")
-    parser.add_argument("after", help="gamestate at the end of the window")
+    parser.add_argument(
+        "after", nargs="?", help="single after-save (else use repeated --arm)"
+    )
+    parser.add_argument(
+        "--arm",
+        action="append",
+        type=_parse_arm,
+        default=[],
+        help="an arm as name=path (repeatable: vanilla=, baseline=, llm=)",
+    )
     parser.add_argument(
         "--cycle",
         default=None,
@@ -168,8 +207,17 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     records = load_cycle(args.cycle) if args.cycle else None
-    report = compare(args.before, args.after, records).to_dict()
-    text = json.dumps(report, indent=2, ensure_ascii=False)
+    if args.arm:
+        reports = {
+            name: ev.to_dict()
+            for name, ev in compare_arms(args.before, dict(args.arm), records).items()
+        }
+    else:
+        if not args.after:
+            parser.error("provide an after-save or at least one --arm")
+        reports = {"after": compare(args.before, args.after, records).to_dict()}
+
+    text = json.dumps(reports, indent=2, ensure_ascii=False)
     if args.output:
         Path(args.output).write_text(text + "\n", encoding="utf-8")
         print(f"wrote evaluation to {args.output}")
