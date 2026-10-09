@@ -1,0 +1,13 @@
+﻿# CK3 LLM Strategist -- message type for the plan toast.
+#
+# Mirrors the core `event_generic_neutral_with_text` type, but uses
+# `event_message_text` ($DESCRIPTION$ only) so the toast body is exactly the
+# plan text passed via the `desc` field of `send_interface_toast`.
+
+ck3llm_plan_toast = {
+	icon = "generic_neutral_effect"
+	title = event_message_title
+	desc = event_message_text
+	style = neutral
+	message_filter_type = event_outcome
+}

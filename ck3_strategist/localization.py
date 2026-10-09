@@ -16,6 +16,7 @@ from .translation import Plan
 
 TITLE_KEY = "ck3llm_plan_title"
 TITLE_TEXT = "Your five-year plan"
+TOAST_TYPE = "ck3llm_plan_toast"
 LANG_DIR = Path("localization") / "english"
 LOC_FILE = "ck3llm_l_english.yml"
 DEFAULT_MOD_DIR = (

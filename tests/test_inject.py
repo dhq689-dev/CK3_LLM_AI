@@ -48,6 +48,7 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "add_pressed_claim = title:k_england" in text
     assert "exists = title:k_england" in text
     assert "send_interface_toast = {" in text
+    assert "type = ck3llm_plan_toast" in text
     assert "desc = ck3llm_plan_" in text
 
 
