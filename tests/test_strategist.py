@@ -287,3 +287,29 @@ def test_strategist_uses_baseline_for_aggression():
 
     intent = Strategist(mock_llm).plan(_summary(aggression_baseline=6))
     assert intent.aggression == 4
+
+
+def test_strategist_records_exchange():
+    def mock_llm(prompt: str) -> str:
+        return _intent_json(five_year_goal="X", secondary_goal="Y")
+
+    exchanges = []
+    Strategist(mock_llm, on_exchange=exchanges.append).plan(_summary())
+    assert len(exchanges) == 1
+    assert "five_year_goal" in exchanges[0]["prompt"]
+    assert exchanges[0]["response"].startswith("{")
+    assert exchanges[0]["retry_error"] is None
+
+
+def test_strategist_records_retry_exchanges():
+    responses = iter(
+        ["bad", _intent_json(five_year_goal="X", secondary_goal="Y")]
+    )
+
+    def mock_llm(prompt: str) -> str:
+        return next(responses)
+
+    exchanges = []
+    Strategist(mock_llm, on_exchange=exchanges.append).plan(_summary())
+    assert len(exchanges) == 2
+    assert exchanges[1]["retry_error"]  # second attempt carries the error

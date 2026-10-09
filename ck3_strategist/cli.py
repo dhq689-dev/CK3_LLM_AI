@@ -58,12 +58,17 @@ def run_pipeline(
     llm_call=None,
     mod_dir: str | None = None,
     debug: bool = True,
+    log_dir: str | None = None,
+    seed: int | None = None,
+    model: str | None = None,
 ) -> tuple[list[dict], list | None, list | None]:
     """Run the full pipeline.
 
     Returns ``(summaries, intents_or_None, plans_or_None)``. When ``mod_dir`` is
     given and an LLM ran, the per-cycle ``scripted_effect`` is written into that
-    mod (Milestone 18).
+    mod (Milestone 18). When ``log_dir`` is given, a JSONL cycle log (prompts,
+    raw responses, intents, plans, seed/model) is written for evaluation
+    (Milestone 20).
     """
     reader = SaveReader(gamestate_path)
     graph = WorldGraph.from_save(reader)
@@ -103,9 +108,35 @@ def run_pipeline(
 
     from .strategist import Strategist
 
-    strategist = Strategist(llm_call)
-    intents = [strategist.plan(s) for s in summaries]
+    intents = []
+    entries: list[dict] = []
+    for snap, summary in zip(selected, summaries, strict=False):
+        exchanges: list[dict] = []
+        strategist = Strategist(llm_call, on_exchange=exchanges.append)
+        intent = strategist.plan(summary)
+        intents.append(intent)
+        entries.append(
+            {
+                "ruler_id": snap.ruler_id,
+                "ruler_name": summary.get("ruler_name"),
+                "title": summary.get("title"),
+                "seed": seed,
+                "model": model,
+                "exchanges": exchanges,
+                "intent": asdict(intent),
+            }
+        )
+
     plans = translate_all(summaries, intents, current_date)
+    for entry, plan in zip(entries, plans, strict=False):
+        entry["plan"] = asdict(plan)
+
+    if log_dir is not None:
+        from .runlog import cycle_filename, write_cycle
+
+        write_cycle(
+            Path(log_dir) / cycle_filename(current_date), current_date, entries
+        )
     if mod_dir is not None:
         write_mod_effect(plans, mod_dir, debug=debug)
     return summaries, intents, plans
@@ -147,6 +178,17 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="omit debug_log lines from the generated script",
     )
+    parser.add_argument(
+        "--log-dir",
+        default=None,
+        help="write a JSONL cycle log (prompts/responses/plans) for evaluation",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="LLM seed, for a reproducible observer-mode A/B run",
+    )
     args = parser.parse_args(argv)
 
     gamestate_path, is_temp = extract_gamestate(args.save)
@@ -155,13 +197,16 @@ def main(argv: list[str] | None = None) -> None:
         if args.llm == "ollama":
             from .strategist import ollama_call
 
-            llm_call = ollama_call(args.model)
+            llm_call = ollama_call(args.model, seed=args.seed)
         summaries, intents, plans = run_pipeline(
             gamestate_path,
             args.tier,
             llm_call,
             mod_dir=args.mod_dir,
             debug=not args.no_debug,
+            log_dir=args.log_dir,
+            seed=args.seed,
+            model=args.model if args.llm != "none" else None,
         )
     finally:
         if is_temp:

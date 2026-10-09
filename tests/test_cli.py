@@ -57,7 +57,7 @@ def test_main_writes_output(tmp_path):
 def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
     from ck3_strategist import cli
 
-    def fake_ollama(model="llama3", host="http://localhost:11434"):
+    def fake_ollama(model="llama3", host="http://localhost:11434", **kwargs):
         return lambda prompt: '{"five_year_goal": "X", "focus": "Diplomacy", "secondary_goal": "Y", "aggression_deviation": -1}'
 
     monkeypatch.setattr(cli, "ollama_call", fake_ollama, raising=False)
@@ -67,6 +67,7 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
     monkeypatch.setattr(strat, "ollama_call", fake_ollama)
     out = tmp_path / "out2"
     mod_dir = tmp_path / "mod"
+    log_dir = tmp_path / "logs"
     main(
         [
             FIXTURE,
@@ -76,6 +77,10 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
             "ollama",
             "--mod-dir",
             str(mod_dir),
+            "--log-dir",
+            str(log_dir),
+            "--seed",
+            "1234",
         ]
     )
     assert (out / "intents.json").exists()
@@ -83,3 +88,5 @@ def test_main_with_llm_uses_injected_call(monkeypatch, tmp_path):
     effect = mod_dir / "common" / "scripted_effects" / "ck3llm_plans.txt"
     assert effect.exists()
     assert effect.read_bytes().startswith(b"\xef\xbb\xbf")  # UTF-8 BOM
+    log = log_dir / "cycle_918-11-5.jsonl"
+    assert log.exists()

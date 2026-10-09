@@ -192,9 +192,11 @@ for aggression). The pipeline must never leave a ruler planless.
   into `Character.plan_vars`, the summary exposes `previous_plan`
   (`{plan_id, since}`), and the strategist prompt tells the LLM what plan it
   has been pursuing and since when.
-- **20 — Evaluation.** Run the same save in observer mode (vanilla AI vs LLM
-  layer) and compare plan adherence, wars started, and realm growth. Log
-  prompts, outputs, and seeds.
+- **20 — Evaluation. HARNESS DONE (runs pending).** `runlog.py` writes a JSONL
+  cycle log (prompts, raw responses, intents, plans, seed/model); `evaluate.py`
+  scores two saves (wars started/ended, realm growth) and plan adherence (did a
+  war for each chosen target title start?); `--log-dir`/`--seed` make a
+  vanilla-vs-LLM A/B reproducible. Actual in-game observer runs still pending.
 - **21 — Narrative / localization.** Generate a localization file so plans
   surface in-game (toast/chronicle entry). Doubles as a debugging aid.
 - **22 — Cadence & save watcher.** 5-year gating and save detection.

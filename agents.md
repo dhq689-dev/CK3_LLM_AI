@@ -45,6 +45,8 @@ ck3_strategist/
   strategist.py    LLM strategist (intent contract)
   translation.py   intent -> modifier tier + guarded hard actions
   inject.py        render plans -> CK3 scripted_effect (utf-8-sig)
+  runlog.py        JSONL cycle logging (prompts/outputs/seeds)
+  evaluate.py      observer-mode evaluation metrics (wars/growth/adherence)
   cli.py           command-line entry point
 reference_data/    static tables (relationships.json, aggression_traits.json,
                    translation.json)
@@ -66,12 +68,13 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–19 are complete and tested (136
+Phase 1, Phase 2, and Phase 3 milestones 14–20 are complete and tested (145
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
 aggression baseline (M16), the translation layer maps intent → modifier tier +
 guarded hard actions (M17), the static mod + generated `scripted_effect` render
-path exists (M18), and `ck3llm_*` plan variables are read back into the briefing
-as `previous_plan` (M19). In-game smoke test of the generated mod is still
-pending. Next is **Milestone 20 — evaluation** (observer-mode A/B) in
+path exists (M18), `ck3llm_*` plan variables are read back into the briefing
+as `previous_plan` (M19), and the evaluation harness (cycle logging + A/B
+metrics) exists (M20). In-game smoke test and observer-mode A/B runs against
+CK3 are still pending. Next is **Milestone 21 — narrative / localization** in
 `docs/roadmap.md`.

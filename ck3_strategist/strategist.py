@@ -285,12 +285,23 @@ def _menu_refs(summary: dict) -> dict[str, set[str]] | None:
 
 
 class Strategist:
-    def __init__(self, llm_call: Callable[[str], str], max_retries: int = 2):
+    def __init__(
+        self,
+        llm_call: Callable[[str], str],
+        max_retries: int = 2,
+        on_exchange: Callable[[dict], None] | None = None,
+    ):
         self._llm_call = llm_call
         self._max_retries = max_retries
+        self._on_exchange = on_exchange
 
     def plan(self, summary: dict) -> Intent:
-        """Plan for one ruler, retrying with error feedback on bad output."""
+        """Plan for one ruler, retrying with error feedback on bad output.
+
+        If ``on_exchange`` was given, it is called with a dict
+        ``{"prompt", "response", "retry_error"}`` for every LLM attempt, so the
+        evaluation layer can log prompts and raw outputs (Milestone 20).
+        """
         baseline = summary.get("aggression_baseline")
         if not isinstance(baseline, int):
             baseline = _DEFAULT_BASELINE
@@ -300,6 +311,14 @@ class Strategist:
         for _ in range(self._max_retries + 1):
             prompt = build_prompt(summary, retry_error)
             response = self._llm_call(prompt)
+            if self._on_exchange is not None:
+                self._on_exchange(
+                    {
+                        "prompt": prompt,
+                        "response": response,
+                        "retry_error": retry_error,
+                    }
+                )
             try:
                 return parse_intent(response, baseline, valid_refs)
             except IntentError as e:
@@ -315,31 +334,41 @@ def ollama_call(
     model: str = "llama3",
     host: str = "http://localhost:11434",
     timeout: float = 120.0,
+    seed: int | None = None,
+    temperature: float | None = None,
 ) -> Callable[[str], str]:
     """Return a callable that talks to a local Ollama server.
 
     Requests JSON output (Ollama's ``format: "json"``), applies a timeout, and
-    raises a clear error on transport failure.
+    raises a clear error on transport failure. ``seed`` / ``temperature`` are
+    forwarded as Ollama options so an A/B comparison can be made deterministic
+    (Milestone 20).
 
     Usage::
 
-        strategist = Strategist(ollama_call("llama3"))
+        strategist = Strategist(ollama_call("llama3", seed=1234))
     """
     import urllib.error
     import urllib.request
 
+    options: dict = {}
+    if seed is not None:
+        options["seed"] = seed
+    if temperature is not None:
+        options["temperature"] = temperature
+
     def call(prompt: str) -> str:
-        payload = json.dumps(
-            {
-                "model": model,
-                "prompt": prompt,
-                "stream": False,
-                "format": "json",
-            }
-        ).encode("utf-8")
+        payload: dict = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+        }
+        if options:
+            payload["options"] = options
         req = urllib.request.Request(
             f"{host}/api/generate",
-            data=payload,
+            data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"},
         )
         try:

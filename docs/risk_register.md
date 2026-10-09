@@ -24,7 +24,7 @@ risk document.
 | 8 | **`power_ratio` misleads** — currently excludes allies, liege, co-belligerents. | Medium | Low | `mitigating` | Definition now documented in `roadmap.md`; state it wherever shown. |
 | 9 | **Save write-back fragility** — patching the gamestate and rezipping can corrupt saves. | Medium | High | `open` | Avoid the edit-and-rezip route unless the mod/console routes fail. |
 | 10 | **Modifier/effect names may drift** across versions; not yet smoke-tested in-game. | Medium | Low | `mitigating` | All names live in `reference_data/translation.json` and `mod/ck3llm_strategist/common/` (data, not code); AI dials now sourced from the script_docs-derived modifier list. Verify in-game once. |
-| 11 | **No evaluation** — nothing measures whether the LLM helps. | High | Medium | `open` | Milestone 20: observer-mode A/B (vanilla vs LLM), compare adherence, wars, realm growth; log prompts/outputs/seeds. |
+| 11 | **No evaluation** — nothing measures whether the LLM helps. | High | Medium | `mitigating` | M20 harness built: `runlog.py` logs prompts/outputs/seeds; `evaluate.py` scores wars, realm growth, and plan adherence between two saves. Actual observer-mode A/B runs still pending. |
 | 12 | **Character-ID references break on death.** | Medium | Medium | `mitigating` | Key plans on `title:...holder`; use character IDs only for landless targets. |
 | 13 | **Version drift** — save format changes between game versions. | Low | Medium | `mitigating` | Verified against 1.17 and 1.19; drift points documented in `../parser_implementation.md` §0. |
 | 14 | **Timing** — the LLM is the bottleneck (~5–15 min/cycle). | High | Low | `accepted` | Fine for a turn-based loop; optimise later (skip unchanged realms, smaller model). |
