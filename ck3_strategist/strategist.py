@@ -107,6 +107,14 @@ def build_prompt(summary: dict, retry_error: str | None = None) -> str:
     baseline = summary.get("aggression_baseline")
     if not isinstance(baseline, int):
         baseline = _DEFAULT_BASELINE
+    previous = summary.get("previous_plan") or {}
+    if previous:
+        plan_line = (
+            f"id={previous.get('plan_id')} since year {previous.get('since')} "
+            "(still in effect)"
+        )
+    else:
+        plan_line = "none"
 
     prompt = f"""You are the strategic advisor for a Crusader Kings III ruler.
 Given the situation below, produce a coherent 5-year strategic plan that is
@@ -125,6 +133,7 @@ Active wars: {summary.get('active_wars')}
 Threats: {threats}
 Opportunities: {opportunities}
 Relationships: {relationships}
+Previous plan: {plan_line}
 
 Aggression baseline (derived from traits): {baseline} on a 0-10 scale.
 Choose ``aggression_deviation`` from -{_MAX_DEVIATION} to {_MAX_DEVIATION} to

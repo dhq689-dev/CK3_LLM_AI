@@ -187,7 +187,11 @@ for aggression). The pipeline must never leave a ruler planless.
   `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), stamping a numeric
   `ck3llm_plan_id` for idempotence across pulses. `--mod-dir` wires it into the
   CLI (writes `plans.json` too). In-game smoke test still pending.
-- **19 — Feedback loop.** Read plan variables back into the briefing.
+- **19 — Feedback loop. DONE.** The generated effect stamps `ck3llm_plan_id`
+  and `ck3llm_plan_start`; the parser reads `ck3llm_*` character variables back
+  into `Character.plan_vars`, the summary exposes `previous_plan`
+  (`{plan_id, since}`), and the strategist prompt tells the LLM what plan it
+  has been pursuing and since when.
 - **20 — Evaluation.** Run the same save in observer mode (vanilla AI vs LLM
   layer) and compare plan adherence, wars started, and realm growth. Log
   prompts, outputs, and seeds.

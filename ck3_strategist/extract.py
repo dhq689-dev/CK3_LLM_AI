@@ -43,6 +43,7 @@ class Character:
     succession: list[int] = field(default_factory=list)
     government: str | None = None
     realm_capital: int | None = None
+    plan_vars: dict[str, int | str] = field(default_factory=dict)
 
 
 @dataclass
@@ -110,6 +111,42 @@ def _as_list(value) -> list:
     return [value]
 
 
+# Namespace for variables the injection layer writes; the feedback loop reads
+# them back (Milestone 19).
+_PLAN_VAR_PREFIX = "ck3llm_"
+
+
+def _variable_value(data) -> int | str | None:
+    """The value of a character-variable ``data`` block, if it is scalar."""
+    if not isinstance(data, dict):
+        return None
+    identity = data.get("identity")
+    if isinstance(identity, (int, str)):
+        return identity
+    flag = data.get("flag")
+    if isinstance(flag, str):
+        return flag
+    return None
+
+
+def _plan_vars(alive: dict) -> dict[str, int | str]:
+    """Collect ``ck3llm_*`` character variables for the feedback loop."""
+    variables = alive.get("variables")
+    if not isinstance(variables, dict):
+        return {}
+    out: dict[str, int | str] = {}
+    for block in _as_list(variables.get("data")):
+        if not isinstance(block, dict):
+            continue
+        flag = block.get("flag")
+        if not isinstance(flag, str) or not flag.startswith(_PLAN_VAR_PREFIX):
+            continue
+        value = _variable_value(block.get("data"))
+        if value is not None:
+            out[flag] = value
+    return out
+
+
 def extract_character(char_id: int, d: dict) -> Character:
     alive = d.get("alive_data") or {}
     landed = d.get("landed_data") or {}
@@ -147,6 +184,7 @@ def extract_character(char_id: int, d: dict) -> Character:
         succession=_as_list(landed.get("succession")),
         government=landed.get("government"),
         realm_capital=landed.get("realm_capital"),
+        plan_vars=_plan_vars(alive),
     )
 
 

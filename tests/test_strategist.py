@@ -85,6 +85,17 @@ def test_build_prompt_handles_missing_menu():
     assert "War targets: none" in prompt
 
 
+def test_build_prompt_includes_previous_plan():
+    prompt = build_prompt(
+        _summary(previous_plan={"plan_id": 42, "since": 918})
+    )
+    assert "Previous plan: id=42 since year 918" in prompt
+
+
+def test_build_prompt_previous_plan_none():
+    assert "Previous plan: none" in build_prompt(_summary())
+
+
 # --- parsing ----------------------------------------------------------------
 
 

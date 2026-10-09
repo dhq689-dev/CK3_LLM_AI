@@ -25,6 +25,7 @@ SCRIPT_ROOT = "common/scripted_effects"
 EFFECT_FILE = "ck3llm_plans.txt"
 DEFAULT_EFFECT_NAME = "ck3llm_apply_plans"
 PLAN_VAR = "ck3llm_plan_id"
+PLAN_START_VAR = "ck3llm_plan_start"
 DEFAULT_MOD_DIR = (
     Path(__file__).resolve().parent.parent / "mod" / "ck3llm_strategist"
 )
@@ -54,6 +55,11 @@ def _render_action(action, level: int) -> list[str]:
     return lines
 
 
+def _year_of(date: str) -> str | None:
+    year = str(date).split(".", 1)[0].strip()
+    return year if year.isdigit() else None
+
+
 def _render_plan(plan: Plan, debug: bool) -> list[str]:
     if not plan.ruler_scope:
         return []  # landless rulers with no scope cannot be targeted yet
@@ -64,6 +70,14 @@ def _render_plan(plan: Plan, debug: bool) -> list[str]:
         _indent(2, "if = {"),
         _indent(3, f"limit = {{ {guard} }}"),
         _indent(3, set_var),
+    ]
+    start_year = _year_of(plan.plan_date)
+    if start_year is not None:
+        start_var = (
+            f"set_variable = {{ name = {PLAN_START_VAR} value = {start_year} }}"
+        )
+        lines.append(_indent(3, start_var))
+    lines += [
         _indent(3, "add_character_modifier = {"),
         _indent(4, f"modifier = {plan.modifier}"),
         _indent(4, f"years = {plan.modifier_years}"),

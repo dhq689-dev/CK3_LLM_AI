@@ -141,3 +141,11 @@ def test_build_summary_renders_menu_as_moves():
     )
     refs = {t["ref"] for t in summary["moves"]["war_targets"]}
     assert "c_colmar" in refs
+
+
+def test_build_summary_includes_previous_plan():
+    reader, graph, snapshots, reference = _setup()
+    snap = next(s for s in snapshots if s.ruler_id == 16801936)
+    threats = compute_threats(graph, snap, snapshots)
+    summary = build_summary(graph, snap, reference, threats, reader.meta_date())
+    assert summary["previous_plan"] == {"plan_id": 843151954, "since": 918}

@@ -41,12 +41,18 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "\t" in text  # CK3 uses tabs
     assert "title:k_france.holder ?= {" in text
     assert "set_variable = { name = ck3llm_plan_id value =" in text
+    assert "set_variable = { name = ck3llm_plan_start value = 1066 }" in text
     assert "NOT = { var:ck3llm_plan_id =" in text
     assert "add_character_modifier = {" in text
     assert "modifier = ck3llm_aggressive_4" in text
     assert "years = 5" in text
     assert "start_war = { target = title:k_england.holder }" in text
     assert "has_truce_with" in text
+
+
+def test_render_omits_start_year_when_no_date():
+    plan = translate(_intent(), {"title": "k_x"})  # no current_date
+    assert "ck3llm_plan_start" not in render_plans([plan])
 
 
 def test_render_omits_debug_log_when_asked():

@@ -59,6 +59,18 @@ def test_extract_character_multiple_spouses():
     assert c.spouses == [16793754, 33571628]
 
 
+def test_extract_character_plan_vars_only_ck3llm():
+    d = parse(
+        "1={ alive_data={ variables={ data={ "
+        "{ flag=ck3llm_plan_id data={ type=value identity=42 } } "
+        "{ flag=ck3llm_plan_start data={ type=value identity=918 } } "
+        "{ flag=unrelated data={ type=boolean identity=1 } } "
+        "} } } }"
+    )
+    c = extract_character(1, d["1"])
+    assert c.plan_vars == {"ck3llm_plan_id": 42, "ck3llm_plan_start": 918}
+
+
 def test_extract_title():
     d = parse(
         "0={ key=d_swabia holder=16801936 de_facto_liege=2 de_jure_liege=2 "
@@ -82,6 +94,16 @@ def test_save_reader_characters():
     assert chars[16801936].prestige == 529.32
     assert chars[16801936].claims == [3238, 1]
     assert chars[33597185].strength == 2000
+
+
+def test_save_reader_reads_plan_vars():
+    reader = SaveReader(FIXTURE)
+    chars = {c.id: c for c in reader.characters()}
+    assert chars[16801936].plan_vars == {
+        "ck3llm_plan_id": 843151954,
+        "ck3llm_plan_start": 918,
+    }
+    assert chars[47802].plan_vars == {}
 
 
 def test_save_reader_titles():

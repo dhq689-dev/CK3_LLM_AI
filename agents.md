@@ -66,11 +66,12 @@ sample_savedata/   real saves (gitignored, large)
 
 ## Current state
 
-Phase 1, Phase 2, and Phase 3 milestones 14–18 are complete and tested (130
+Phase 1, Phase 2, and Phase 3 milestones 14–19 are complete and tested (136
 tests): the injection levers are verified (M14), the legal-move menu builder
 exists (M15), the intent contract is menu-constrained with a trait-derived
 aggression baseline (M16), the translation layer maps intent → modifier tier +
-guarded hard actions (M17), and the static mod + generated `scripted_effect`
-render path exists (M18). In-game smoke test of the generated mod is still
-pending. Next is **Milestone 19 — feedback loop** (read plan variables back into
-the briefing) in `docs/roadmap.md`.
+guarded hard actions (M17), the static mod + generated `scripted_effect` render
+path exists (M18), and `ck3llm_*` plan variables are read back into the briefing
+as `previous_plan` (M19). In-game smoke test of the generated mod is still
+pending. Next is **Milestone 20 — evaluation** (observer-mode A/B) in
+`docs/roadmap.md`.

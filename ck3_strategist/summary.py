@@ -103,9 +103,24 @@ def build_summary(
         "major_opportunities": opportunities,
         "relationships": relationships or [],
         "moves": _moves_block(menu),
+        "previous_plan": _previous_plan(char),
         "active_wars": len(snapshot.war_ids),
         "claims_available": len(snapshot.claim_ids),
     }
+
+
+def _previous_plan(char) -> dict:
+    """The plan the injection layer applied last cycle, if still on the ruler.
+
+    Read back from the ``ck3llm_*`` character variables (Milestone 19), so the
+    briefing gives the LLM memory of its own intent and its start year.
+    """
+    if char is None or not char.plan_vars:
+        return {}
+    plan_id = char.plan_vars.get("ck3llm_plan_id")
+    if plan_id is None:
+        return {}
+    return {"plan_id": plan_id, "since": char.plan_vars.get("ck3llm_plan_start")}
 
 
 def _moves_block(menu) -> dict:
