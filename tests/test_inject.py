@@ -42,7 +42,6 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "title:k_france.holder ?= {" in text
     assert "set_variable = { name = ck3llm_plan_id value =" in text
     assert "set_variable = { name = ck3llm_plan_start value = 1066 }" in text
-    assert "NOT = { var:ck3llm_plan_id =" in text
     assert "add_character_modifier = {" in text
     assert "modifier = ck3llm_aggressive_4" in text
     assert "years = 5" in text
@@ -59,8 +58,9 @@ def test_render_clears_previous_tiers_before_adding():
     plan = translate(_intent(), {"title": "k_france"}, "1066.1.1")
     text = render_plans([plan])
     for n in range(1, 6):
-        line = f"remove_character_modifier = {{ modifier = ck3llm_aggressive_{n} }}"
+        line = f"remove_character_modifier = ck3llm_aggressive_{n}"
         assert line in text
+    assert "remove_character_modifier = {" not in text  # unary, not a block
     # all removals come before the new tier is added
     assert text.index("remove_character_modifier") < text.index(
         "add_character_modifier"

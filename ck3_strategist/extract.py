@@ -43,7 +43,7 @@ class Character:
     succession: list[int] = field(default_factory=list)
     government: str | None = None
     realm_capital: int | None = None
-    plan_vars: dict[str, int | str] = field(default_factory=dict)
+    plan_vars: dict[str, int | float | str] = field(default_factory=dict)
 
 
 @dataclass
@@ -116,11 +116,18 @@ def _as_list(value) -> list:
 _PLAN_VAR_PREFIX = "ck3llm_"
 
 
-def _variable_value(data) -> int | str | None:
-    """The value of a character-variable ``data`` block, if it is scalar."""
+def _variable_value(data) -> int | float | str | None:
+    """The value of a character-variable ``data`` block, if scalar.
+
+    ``type=value`` is CK3's fixed-point representation (5 decimals), so the raw
+    ``identity`` is the value x 100000; normalise it back.
+    """
     if not isinstance(data, dict):
         return None
     identity = data.get("identity")
+    if data.get("type") == "value" and isinstance(identity, (int, float)):
+        value = identity / 100000
+        return int(value) if value.is_integer() else value
     if isinstance(identity, (int, str)):
         return identity
     flag = data.get("flag")
@@ -129,12 +136,12 @@ def _variable_value(data) -> int | str | None:
     return None
 
 
-def _plan_vars(alive: dict) -> dict[str, int | str]:
+def _plan_vars(alive: dict) -> dict[str, int | float | str]:
     """Collect ``ck3llm_*`` character variables for the feedback loop."""
     variables = alive.get("variables")
     if not isinstance(variables, dict):
         return {}
-    out: dict[str, int | str] = {}
+    out: dict[str, int | float | str] = {}
     for block in _as_list(variables.get("data")):
         if not isinstance(block, dict):
             continue

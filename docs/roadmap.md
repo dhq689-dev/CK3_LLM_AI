@@ -182,15 +182,16 @@ for aggression). The pipeline must never leave a ruler planless.
   All CK3 names live in `reference_data/translation.json` and remain
   **unverified** pending a `script_docs` dump (see `validate.py`). Script
   emission is Milestone 18.
-- **18 — Static mod + generated script. IN PROGRESS (in-game test pending).**
-  `mod/ck3llm_strategist/` holds the hand-written aggression tiers and the
-  `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s into
-  `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), clearing stale tiers,
-  stamping a numeric `ck3llm_plan_id` for idempotence, and recording
-  `ck3llm_plan_start`. `--mod-dir` wires it into the CLI (writes `plans.json`
-  too). **The hard actions and AI dials have never executed in-game** (review
-  v4 §2); the generated file is not trusted until it passes the name validator
-  and a smoke test.
+- **18 — Static mod + generated script. IN PROGRESS (soft lever validated
+  in-game).** `mod/ck3llm_strategist/` holds the hand-written aggression tiers
+  and the `yearly_global_pulse` hook; `inject.py` renders each cycle's `Plan`s
+  into `common/scripted_effects/ck3llm_plans.txt` (UTF-8 BOM), clearing stale
+  tiers and stamping `ck3llm_plan_id`/`ck3llm_plan_start`. First in-game run
+  confirmed the hook, `?=` scope, `set_variable`, and tier application; found
+  that `remove_character_modifier` is unary and `type=value` variables are
+  fixed-point (see risk register "Live smoke-test findings"). Hard actions
+  (`add_pressed_claim`/`create_alliance`) are name-verified but not yet
+  executed.
 - **19 — Feedback loop. DONE.** The generated effect stamps `ck3llm_plan_id`
   and `ck3llm_plan_start`; the parser reads `ck3llm_*` character variables back
   into `Character.plan_vars`, the summary exposes `previous_plan`

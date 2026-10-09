@@ -62,13 +62,24 @@ def test_extract_character_multiple_spouses():
 def test_extract_character_plan_vars_only_ck3llm():
     d = parse(
         "1={ alive_data={ variables={ data={ "
-        "{ flag=ck3llm_plan_id data={ type=value identity=42 } } "
-        "{ flag=ck3llm_plan_start data={ type=value identity=918 } } "
+        "{ flag=ck3llm_plan_id data={ type=value identity=4200000 } } "
+        "{ flag=ck3llm_plan_start data={ type=value identity=91800000 } } "
         "{ flag=unrelated data={ type=boolean identity=1 } } "
         "} } } }"
     )
     c = extract_character(1, d["1"])
+    # type=value is fixed-point x100000, so it is normalised back
     assert c.plan_vars == {"ck3llm_plan_id": 42, "ck3llm_plan_start": 918}
+
+
+def test_variable_value_normalises_fixed_point():
+    from ck3_strategist.extract import _variable_value
+
+    assert _variable_value({"type": "value", "identity": 150000}) == 1.5
+    assert _variable_value({"type": "value", "identity": 4200000}) == 42
+    assert _variable_value({"type": "char", "identity": 42}) == 42
+    assert _variable_value({"type": "flag", "flag": "doll"}) == "doll"
+    assert _variable_value({"type": "boolean", "identity": 1}) == 1
 
 
 def test_extract_title():

@@ -69,12 +69,34 @@ ck3llm_yearly_pulse = {
 }
 ```
 
+## Live smoke-test findings (M18/M19 — 1.20.0.4)
+
+From running the generated effect in-game for the first time:
+
+1. **`remove_character_modifier` is unary** — `remove_character_modifier =
+   ck3llm_aggressive_1`, not `{ modifier = ... }` (the block form is parsed as
+   the modifier value `{`, and errors).
+2. **`type=value` character variables are fixed-point (×100000).** A variable
+   set to `1066` is stored as `identity=106600000`; the parser normalises it.
+3. **`NOT = { var:name = X }` errors when the variable is unset** ("Failed to
+   fetch variable ... due to not being set"). The generated effect no longer
+   uses a plan-id guard; per-pulse idempotence returns with standing orders.
+4. **One bad effect aborts the whole generated effect.** The `remove` syntax
+   above errored on the first ruler, so only that ruler's variables (set before
+   the error) persisted. A name validator (CG1) plus small, guarded effects is
+   the mitigation.
+5. Confirmed working in this run: the `yearly_global_pulse` hook, `?=` scope,
+   `set_variable`, and the effect firing. Hard actions had no moves in the
+   baseline run, so `add_pressed_claim` / `create_alliance` are name-verified
+   but not yet executed.
+
 ## Open questions
 
 - Do AI-personality modifiers (`ai_boldness`, `ai_war_chance`, ...) actually
   move behaviour, and how strongly? (Milestone 14 proved a *stat* modifier
   applies; the AI dials still need testing.)
-- What are the exact `ai_*` modifier names? (Run `script_docs`.)
+- Does granting a pressed claim (`add_pressed_claim`) make vanilla AI pursue
+  the target, and how often?
 - Can CK3's autosave interval be set to 5 years (and is it scriptable)?
 - What is the cleanest way to surface plans in-game (toast vs chronicle)?
 - What is the minimal legal-move menu that is still useful?

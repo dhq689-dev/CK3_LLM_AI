@@ -6,9 +6,12 @@ the per-cycle ``scripted_effect`` the hook calls. Re-running a cycle overwrites
 that one file; the static files are never touched, so a save that still
 references an old modifier keeps loading (mod stability, risk register #6).
 
-The generated effect is idempotent across pulses: it stamps
-``ck3llm_plan_id`` on the ruler and does nothing if the variable already holds
-the current plan's id.
+The generated effect stamps ``ck3llm_plan_id``/``ck3llm_plan_start`` on each
+ruler (for the feedback loop) and re-applies the plan every yearly pulse. That
+is idempotent for the current levers -- tiers are cleared before being added,
+and ``add_pressed_claim``/``create_alliance`` no-op when already satisfied. A
+plan-id guard that skips re-application errors when the variable is first unset,
+so per-pulse idempotence is deferred to the standing-orders design (CG3).
 
 CK3 requires script files to be UTF-8 **with BOM**, so :func:`write_plans`
 writes ``utf-8-sig``.
@@ -65,34 +68,34 @@ def _year_of(date: str) -> str | None:
 def _render_plan(plan: Plan, debug: bool) -> list[str]:
     if not plan.ruler_scope:
         return []  # landless rulers with no scope cannot be targeted yet
-    guard = f"NOT = {{ var:{PLAN_VAR} = {plan.plan_id} }}"
     set_var = f"set_variable = {{ name = {PLAN_VAR} value = {plan.plan_id} }}"
+    # NOTE: no plan-id guard here. `NOT = { var:ck3llm_plan_id = X }` errors on
+    # the first run when the variable is unset, and every current effect is
+    # idempotent anyway (tiers are cleared, `add_pressed_claim`/`create_alliance`
+    # no-op when already true). Per-pulse idempotence returns with standing
+    # orders (CG3). `remove_character_modifier` is unary in CK3.
     lines = [
         _indent(1, f"{plan.ruler_scope} ?= {{"),
-        _indent(2, "if = {"),
-        _indent(3, f"limit = {{ {guard} }}"),
-        _indent(3, set_var),
+        _indent(2, set_var),
     ]
     start_year = _year_of(plan.plan_date)
     if start_year is not None:
         start_var = (
             f"set_variable = {{ name = {PLAN_START_VAR} value = {start_year} }}"
         )
-        lines.append(_indent(3, start_var))
-    remove_tmpl = "remove_character_modifier = {{ modifier = {} }}"
+        lines.append(_indent(2, start_var))
     for stale in plan.clear_modifiers:
-        lines.append(_indent(3, remove_tmpl.format(stale)))
+        lines.append(_indent(2, f"remove_character_modifier = {stale}"))
     lines += [
-        _indent(3, "add_character_modifier = {"),
-        _indent(4, f"modifier = {plan.modifier}"),
-        _indent(4, f"years = {plan.modifier_years}"),
-        _indent(3, "}"),
+        _indent(2, "add_character_modifier = {"),
+        _indent(3, f"modifier = {plan.modifier}"),
+        _indent(3, f"years = {plan.modifier_years}"),
+        _indent(2, "}"),
     ]
     for action in plan.actions:
-        lines.extend(_render_action(action, level=3))
+        lines.extend(_render_action(action, level=2))
     if debug:
-        lines.append(_indent(3, f'debug_log = "ck3llm: plan {plan.plan_id} applied"'))
-    lines.append(_indent(2, "}"))
+        lines.append(_indent(2, f'debug_log = "ck3llm: plan {plan.plan_id} applied"'))
     lines.append(_indent(1, "}"))
     return lines
 
