@@ -87,6 +87,11 @@ def run_pipeline(
     wanted = {TIER_1} if tier == 1 else {TIER_1, TIER_2}
     selected = [s for s in snapshots if tiers[s.ruler_id] in wanted]
 
+    # Plans steer the AI; never the player's own ruler.
+    player_id = reader.player_character_id()
+    if player_id is not None:
+        selected = [s for s in selected if s.ruler_id != player_id]
+
     from .relationships import RelationshipGraph
 
     current_date = reader.meta_date()

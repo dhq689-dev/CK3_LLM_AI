@@ -35,6 +35,7 @@ risk document.
 | 19 | **LLM narrative discarded** — `focus` / goals never reach the game. | Low | Low | `closed` | M21/CG5: `Plan` carries the narrative, `localization.py` renders it, and the player sees their own plan as a toast. |
 | 20 | **Evaluation can't attribute causation** — two arms can't separate the LLM from the deterministic dial. | High | Medium | `mitigating` | `compare_arms` three-arm harness (vanilla / baseline / LLM) with seeds; runs pending (review v4 §7). |
 | 21 | **Single generated file blast radius** — one bad token breaks the effect for every ruler. | Medium | Medium | `open` | Name validator (CG1) plus the standing-orders data-only file (CG3) shrink it. |
+| 22 | **Player's ruler was being steered** like an AI (tier + hard actions), and shown a plan toast. | Medium | Medium | `closed` | `run_pipeline` reads `played_character` and excludes that ruler; the player toast was dropped. Plans are for AI rulers only (design principle 8). |
 
 ## Injection findings (Milestone 14 — verified on 1.20.0.4)
 

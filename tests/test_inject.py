@@ -47,9 +47,7 @@ def test_render_plan_contains_scope_modifier_and_guard():
     assert "years = 5" in text
     assert "add_pressed_claim = title:k_england" in text
     assert "exists = title:k_england" in text
-    assert "send_interface_toast = {" in text
-    assert "type = ck3llm_plan_toast" in text
-    assert "desc = ck3llm_plan_" in text
+    assert "send_interface_toast" not in text  # plans steer AI rulers only
 
 
 def test_render_omits_start_year_when_no_date():

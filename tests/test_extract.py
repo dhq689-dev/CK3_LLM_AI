@@ -117,6 +117,25 @@ def test_save_reader_reads_plan_vars():
     assert chars[47802].plan_vars == {}
 
 
+def test_player_character_id_none_without_player():
+    assert SaveReader(FIXTURE).player_character_id() is None
+
+
+def test_player_character_id_from_played_character(tmp_path):
+    p = tmp_path / "save.txt"
+    p.write_text(
+        'played_character={\n\tname="p"\n\tcharacter=42\n\tplayer=1\n}\n',
+        encoding="utf-8",
+    )
+    assert SaveReader(str(p)).player_character_id() == 42
+
+
+def test_player_character_id_from_currently_played(tmp_path):
+    p = tmp_path / "save.txt"
+    p.write_text("currently_played_characters={ 42 }\n", encoding="utf-8")
+    assert SaveReader(str(p)).player_character_id() == 42
+
+
 def test_save_reader_titles():
     reader = SaveReader(FIXTURE)
     titles = {t.id: t for t in reader.titles()}

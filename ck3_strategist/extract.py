@@ -370,6 +370,26 @@ class SaveReader:
         """The save's current date (e.g. '918.11.5')."""
         return self._read_dict("meta_data").get("meta_date", "")
 
+    def player_character_id(self) -> int | None:
+        """The character the player controls, or ``None`` in an observer save.
+
+        The plans are for AI rulers, so the pipeline excludes this character.
+        """
+        played = self._read_dict("played_character")
+        cid = played.get("character")
+        if isinstance(cid, int):
+            return cid
+        played_chars = self.read_section("currently_played_characters")
+        if isinstance(played_chars, list):
+            for item in played_chars:
+                if isinstance(item, int):
+                    return item
+        elif isinstance(played_chars, dict):
+            cid = played_chars.get("character")
+            if isinstance(cid, int):
+                return cid
+        return None
+
     def dynamic_templates(self) -> dict[str, str]:
         """Map modded title keys (e.g. ``x_mc_0``) to their tier."""
         lt = self._read_dict("landed_titles")

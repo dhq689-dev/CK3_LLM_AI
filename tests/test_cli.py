@@ -93,6 +93,21 @@ def test_run_pipeline_with_mock_backend_picks_moves():
     assert any(i.moves for i in intents)
 
 
+def test_run_pipeline_excludes_player(tmp_path):
+    text = Path(FIXTURE).read_text(encoding="utf-8")
+    text = text.replace(
+        "meta_data={",
+        'played_character={\n\tcharacter=16801936\n}\nmeta_data={',
+        1,
+    )
+    save = tmp_path / "save.txt"
+    save.write_text(text, encoding="utf-8")
+    summaries, intents, plans = run_pipeline(str(save), tier=1)
+    names = {s["ruler_name"] for s in summaries}
+    assert "Blaz" not in names  # the player's ruler is not planned
+    assert "Basileios" in names
+
+
 def test_extract_gamestate_plaintext():
     path, is_temp = extract_gamestate(FIXTURE)
     assert path == FIXTURE

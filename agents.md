@@ -79,9 +79,10 @@ guarded hard actions and clears stale tiers (M17), the static mod + generated
 injection hook, tier apply/clear/expire, hard actions, and feedback variables
 all confirmed on CK3 1.20.0.4), `ck3llm_*` plan variables are read back into the
 briefing as `previous_plan` (M19), the evaluation harness (cycle logging +
-three-arm A/B metrics) exists (M20), and plan narrative is localized in-game as
-a toast (M21). A deterministic no-plan fallback + per-ruler error isolation are
-in place.
+three-arm A/B metrics) exists (M20), and plan narrative is written to a
+localization catalogue (M21). A deterministic no-plan fallback + per-ruler
+error isolation are in place, and the **player's ruler is excluded** from
+planning (plans steer AI rulers only).
 
 A third-party review (`docs/review_notes_v4.txt`) is folded into the
 **"Correctness gate"** in `docs/roadmap.md` (CG1–CG7) and
