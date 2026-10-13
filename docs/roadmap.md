@@ -240,15 +240,17 @@ correctness precedes features; **CG1–CG2 block trusting the generated file**.
   stays dropped until rewritten in a war scope. For a future forced-war lever
   the verified form is `start_war = { cb = claim_cb target = <holder>
   target_title = title:<key> }`.
-- **CG3 — Standing orders (data-only generated file). DONE (in-game test
-  pending).** Each hard order becomes a variable (`ck3llm_war_target` =
+- **CG3 — Standing orders (data-only generated file). DONE (validated
+  in-game).** Each hard order becomes a variable (`ck3llm_war_target` =
   claimed title, `ck3llm_ally_target` = character); the generated file only
   sets/clears that data and the tier, then calls the static, hand-tested
   `ck3llm_execute_orders`. That static effect re-checks readiness every yearly
   pulse (`has_claim_on`, `is_alive`, `is_allied_to`) before acting
-  (`add_pressed_claim` / `create_alliance`). This keeps a malformed generated
-  file from carrying effect logic, keeps the order alive for the plan's term
-  instead of firing once, and lets vanilla AI pursue granted claims.
+  (`add_pressed_claim` / `create_alliance`). Confirmed on 1.20.0.4: the order
+  variables persist as typed scopes (`type=lt` / `type=char`) and the executor
+  runs with no errors. This keeps a malformed generated file from carrying
+  effect logic, keeps the order alive for the plan's term instead of firing
+  once, and lets vanilla AI pursue granted claims.
 - **CG4 — Robustness.** Deterministic no-plan fallback + per-ruler error
   isolation so one bad response cannot abort the whole cycle (review v4 §6).
   *Fallback + isolation now implemented; keep as a regression guard.*

@@ -111,6 +111,10 @@ From running the generated effect in-game for the first time:
   (`previous_plan`) on the next parse.
 - `add_pressed_claim` and `create_alliance` execute cleanly with the guards
   above.
+- Standing orders (CG3) are stored as typed scope variables
+  (`ck3llm_war_target` = `type=lt`, `ck3llm_ally_target` = `type=char`) and
+  executed by the static `ck3llm_execute_orders` each yearly pulse, with no
+  errors.
 
 ## Open questions
 

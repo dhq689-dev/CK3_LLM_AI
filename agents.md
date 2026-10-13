@@ -87,7 +87,6 @@ the **player's ruler is excluded** from planning (plans steer AI rulers only).
 A third-party review (`docs/review_notes_v4.txt`) is folded into the
 **"Correctness gate"** in `docs/roadmap.md` (CG1–CG7) and
 `docs/risk_register.md` (#16–#21). **CG1 (name validation), CG2 (hard actions),
-CG3 (standing orders), and CG5 (localized goals) are done.** Outstanding:
-**CG6 (three-arm observer A/B — needs an LLM install)** and **CG7 (menu
-adjacency — needs static map data)**. CG3's static executor still needs an
-in-game smoke test.
+CG3 (standing orders), and CG5 (localized goals) are done** and validated
+in-game. Outstanding: **CG6 (three-arm observer A/B — needs an LLM install)**
+and **CG7 (menu adjacency — needs static map data)**.
