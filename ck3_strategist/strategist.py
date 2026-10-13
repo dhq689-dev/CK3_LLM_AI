@@ -346,6 +346,30 @@ def mock_intent(summary: dict) -> Intent:
     )
 
 
+def fixed_aggression_intent(
+    aggression: int,
+) -> Callable[[dict], Intent]:
+    """A planner that pins every ruler to one aggression value, with no moves.
+
+    For the dose-response test (all rulers tier 1 vs tier 5): it isolates the
+    soft tier from the narrative and any hard orders.
+    """
+    value = max(0, min(10, int(aggression)))
+
+    def planner(summary: dict) -> Intent:
+        base = baseline_intent(summary)
+        return Intent(
+            five_year_goal=base.five_year_goal,
+            focus=base.focus,
+            aggression=value,
+            aggression_deviation=0,
+            secondary_goal=base.secondary_goal,
+            moves=[],
+        )
+
+    return planner
+
+
 class Strategist:
     def __init__(
         self,

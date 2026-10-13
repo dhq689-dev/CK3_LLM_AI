@@ -67,6 +67,7 @@ def run_pipeline(
     cadence: bool = False,
     plans_store: str | None = None,
     interval: int = PLAN_INTERVAL_YEARS,
+    limit: int | None = None,
 ) -> tuple[list[dict], list | None, list | None]:
     """Run the full pipeline.
 
@@ -98,6 +99,8 @@ def run_pipeline(
     player_id = reader.player_character_id()
     if player_id is not None:
         selected = [s for s in selected if s.ruler_id != player_id]
+    if limit is not None:
+        selected = selected[:limit]
 
     from .relationships import RelationshipGraph
 
@@ -289,6 +292,19 @@ def main(argv: list[str] | None = None) -> None:
         metavar="DIR",
         help="watch a saves directory and run a cycle on each new save",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="plan at most N rulers (for quick test runs)",
+    )
+    parser.add_argument(
+        "--force-aggression",
+        type=int,
+        default=None,
+        metavar="0-10",
+        help="pin every ruler to this aggression (dose-response; no LLM, no moves)",
+    )
     args = parser.parse_args(argv)
 
     plans_store = args.plans_store
@@ -297,7 +313,11 @@ def main(argv: list[str] | None = None) -> None:
 
     llm_call = None
     planner = None
-    if args.llm == "ollama":
+    if args.force_aggression is not None:
+        from .strategist import fixed_aggression_intent
+
+        planner = fixed_aggression_intent(max(0, min(10, args.force_aggression)))
+    elif args.llm == "ollama":
         from .strategist import ollama_call
 
         llm_call = ollama_call(args.model, seed=args.seed)
@@ -326,6 +346,7 @@ def main(argv: list[str] | None = None) -> None:
                 cadence=args.cadence,
                 plans_store=plans_store,
                 interval=args.interval,
+                limit=args.limit,
             )
         finally:
             if is_temp:

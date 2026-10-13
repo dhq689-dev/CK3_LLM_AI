@@ -256,12 +256,15 @@ correctness precedes features; **CG1–CG2 block trusting the generated file**.
   *Fallback + isolation now implemented; keep as a regression guard.*
 - **CG5 — Localize goals. DONE (with M21).** `five_year_goal` /
   `secondary_goal` / `focus` are rendered to
-  `localization/english/ck3llm_l_english.yml` and shown to the player as a toast,
-  so the LLM's narrative is no longer silently dropped.
+  `localization/english/ck3llm_l_english.yml` as a plan catalogue, so the LLM's
+  narrative is no longer silently dropped. (The player-only toast was dropped
+  when the player was excluded from planning.)
 - **CG6 — Measurement.** Run the three-arm, multi-seed A/B, with a
   counterfactual ("how often did vanilla attack the same target anyway?"), plus
   the cheap dose-response test (50 years, all kings tier 1 vs tier 5) to see if
-  the soft lever does anything.
+  the soft lever does anything. Tooling: `--llm none|baseline|ollama` for the
+  three arms, `--force-aggression 0|10` + `--limit N` for the dose-response,
+  and `evaluate --arm name=path` to compare.
 - **CG7 — Menu quality.** Province adjacency from the game install (retires
   risk #3); CB validity where feasible.
 

@@ -130,6 +130,17 @@ def test_run_pipeline_cadence_reuses_stored_plans(tmp_path):
     assert store.exists()
 
 
+def test_run_pipeline_limit():
+    from ck3_strategist.strategist import baseline_intent
+
+    summaries, intents, plans = run_pipeline(
+        FIXTURE, tier=1, planner=baseline_intent, limit=1
+    )
+    assert len(summaries) == 1
+    assert plans is not None
+    assert len(plans) == 1
+
+
 def test_extract_gamestate_plaintext():
     path, is_temp = extract_gamestate(FIXTURE)
     assert path == FIXTURE

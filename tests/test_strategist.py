@@ -351,3 +351,13 @@ def test_mock_intent_handles_empty_menu():
     from ck3_strategist.strategist import mock_intent
 
     assert mock_intent(_summary(moves={})).moves == []
+
+
+def test_fixed_aggression_intent_pins_value():
+    from ck3_strategist.strategist import fixed_aggression_intent
+
+    planner = fixed_aggression_intent(10)
+    intent = planner(_summary(aggression_baseline=3))
+    assert intent.aggression == 10
+    assert intent.moves == []
+    assert fixed_aggression_intent(99)(_summary()).aggression == 10
