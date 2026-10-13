@@ -207,7 +207,24 @@ def main(argv: list[str] | None = None) -> None:
         prog="ck3_strategist",
         description="Parse a CK3 save into strategic summaries (and LLM intents).",
     )
-    parser.add_argument("save", help="path to a .ck3 save or plaintext gamestate")
+    parser.add_argument(
+        "save",
+        nargs="?",
+        help="path to a .ck3 save or plaintext gamestate "
+        "(or use --saves-dir / --watch)",
+    )
+    parser.add_argument(
+        "--saves-dir",
+        default=None,
+        metavar="DIR",
+        help="run once on the newest save in DIR that uses --mod-marker",
+    )
+    parser.add_argument(
+        "--mod-marker",
+        default="ck3llm_strategist",
+        help="only steer saves whose mod list contains this string "
+        "(default: ck3llm_strategist)",
+    )
     parser.add_argument(
         "--tier",
         type=int,
@@ -337,10 +354,37 @@ def main(argv: list[str] | None = None) -> None:
                 )
             print(f"wrote {len(plans)} plans to {plans_file}")
 
+    marker = args.mod_marker
+
+    def run_if_modded(save_path: str) -> bool:
+        from .extract import save_mods
+
+        if not any(marker in mod for mod in save_mods(save_path)):
+            print(f"skipping {save_path}: does not use '{marker}'")
+            return False
+        run_once(save_path)
+        return True
+
     if args.watch:
         from .cadence import watch_saves
 
-        print(f"watching {args.watch} for new saves (Ctrl+C to stop)...")
-        watch_saves(args.watch, on_new=lambda paths: run_once(paths[-1]))
-    else:
+        print(f"watching {args.watch} for saves using '{marker}' (Ctrl+C to stop)...")
+
+        def on_new(paths: list[str]) -> None:
+            for path in paths:
+                run_if_modded(path)
+
+        watch_saves(args.watch, on_new=on_new)
+    elif args.saves_dir:
+        from .cadence import newest_modded_save
+
+        target = newest_modded_save(args.saves_dir, marker)
+        if target is None:
+            print(f"no save using '{marker}' in {args.saves_dir}")
+        else:
+            print(f"newest modded save: {target}")
+            run_once(target)
+    elif args.save:
         run_once(args.save)
+    else:
+        parser.error("provide a save path, --saves-dir, or --watch")

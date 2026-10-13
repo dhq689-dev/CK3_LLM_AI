@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import re
+import zipfile
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 
@@ -398,4 +399,40 @@ class SaveReader:
             if isinstance(entry, dict) and "key" in entry and "tier" in entry:
                 mapping[entry["key"]] = entry["tier"]
         return mapping
+
+
+_META_HEAD = 1 << 16  # 64 KiB is plenty to reach meta_data at the top
+_MODS_RE = re.compile(r"\bmods=\{[^}]*\}")
+_QUOTED_RE = re.compile(r'"([^"]+)"')
+
+
+def save_mods(path: str) -> list[str]:
+    """The mod list recorded in a save's ``meta_data`` (Zip ``.ck3`` or plaintext).
+
+    Used to only steer saves whose playset includes this mod.
+    """
+    head = ""
+    try:
+        with zipfile.ZipFile(path) as z:
+            member = next(
+                (
+                    n
+                    for n in z.namelist()
+                    if n == "gamestate" or n.endswith("/gamestate")
+                ),
+                None,
+            )
+            if member is not None:
+                with z.open(member) as src:
+                    head = src.read(_META_HEAD).decode("utf-8", "replace")
+    except (zipfile.BadZipFile, OSError):
+        head = ""
+    if not head:
+        try:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                head = f.read(_META_HEAD)
+        except OSError:
+            return []
+    match = _MODS_RE.search(head)
+    return _QUOTED_RE.findall(match.group(0)) if match else []
 

@@ -136,6 +136,26 @@ def test_player_character_id_from_currently_played(tmp_path):
     assert SaveReader(str(p)).player_character_id() == 42
 
 
+def test_save_mods_plaintext(tmp_path):
+    from ck3_strategist.extract import save_mods
+
+    p = tmp_path / "s.txt"
+    p.write_text(
+        'SAV0\nmeta_data={\n\tmods={ "mod/a.mod" '
+        '"mod/ck3llm_strategist.mod" }\n}\n',
+        encoding="utf-8",
+    )
+    assert save_mods(str(p)) == ["mod/a.mod", "mod/ck3llm_strategist.mod"]
+
+
+def test_save_mods_none(tmp_path):
+    from ck3_strategist.extract import save_mods
+
+    p = tmp_path / "s.txt"
+    p.write_text("meta_data={\n\tdate=1.1.1\n}\n", encoding="utf-8")
+    assert save_mods(str(p)) == []
+
+
 def test_save_reader_titles():
     reader = SaveReader(FIXTURE)
     titles = {t.id: t for t in reader.titles()}

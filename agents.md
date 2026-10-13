@@ -56,6 +56,7 @@ mod/               static CK3 mod (ck3llm_strategist) + generated effect
 docs/              vision, roadmap, risk register
 tests/             unit tests + hand-written fixture
 sample_savedata/   real saves (gitignored, large)
+run_ck3llm.bat     one-click cycle launcher (runs on the newest modded save)
 ```
 
 ## Conventions

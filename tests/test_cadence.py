@@ -82,3 +82,18 @@ def test_watch_saves_reports_no_change(tmp_path):
     calls: list[list[str]] = []
     watch_saves(tmp_path, calls.append, interval=0, max_polls=1)
     assert calls == []
+
+
+def test_newest_modded_save(tmp_path):
+    from ck3_strategist.cadence import modded_saves, newest_modded_save
+
+    good = tmp_path / "good.ck3"
+    good.write_text(
+        'meta_data={\n\tmods={ "mod/ck3llm_strategist.mod" }\n}\n',
+        encoding="utf-8",
+    )
+    other = tmp_path / "other.ck3"
+    other.write_text('meta_data={\n\tmods={ "mod/RICE.mod" }\n}\n', encoding="utf-8")
+    assert [p for _, p in modded_saves(tmp_path, "ck3llm_strategist")] == [str(good)]
+    assert newest_modded_save(tmp_path, "ck3llm_strategist") == str(good)
+    assert newest_modded_save(tmp_path, "nope") is None

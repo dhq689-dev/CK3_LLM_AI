@@ -18,6 +18,7 @@ from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
 
+from .extract import save_mods
 from .strategist import Intent
 from .translation import Order, Plan
 
@@ -170,3 +171,21 @@ def watch_saves(
             on_new(changed)
         seen = current
     return seen
+
+
+def modded_saves(
+    directory: str | Path, marker: str
+) -> list[tuple[float, str]]:
+    """``(mtime, path)`` for saves whose mod list contains ``marker``, oldest first."""
+    found = [
+        (mtime, path)
+        for path, mtime in scan_saves(directory).items()
+        if any(marker in mod for mod in save_mods(path))
+    ]
+    return sorted(found)
+
+
+def newest_modded_save(directory: str | Path, marker: str) -> str | None:
+    """The most recently modified save that uses the mod, or ``None``."""
+    found = modded_saves(directory, marker)
+    return found[-1][1] if found else None
