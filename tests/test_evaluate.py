@@ -1,5 +1,6 @@
 """Tests for observer-mode evaluation (Milestone 20)."""
 
+import zipfile
 from pathlib import Path
 
 from ck3_strategist.evaluate import compare, load_graph, realm_growth, wars_delta
@@ -93,3 +94,16 @@ def test_compare_arms_scores_each(tmp_path):
     assert set(arms) == {"llm", "baseline"}
     assert arms["llm"].wars_started == [900000001]
     assert arms["baseline"].wars_started == []
+
+
+def test_load_graph_unzips_zip_ck3(tmp_path):
+    # CK3 saves can be ZIP archives with a 'gamestate' member; evaluate must
+    # still parse them (regression: it used to read the zip as plaintext).
+    from ck3_strategist.evaluate import load_graph
+
+    zpath = tmp_path / "save.ck3"
+    with zipfile.ZipFile(zpath, "w") as z:
+        z.write(FIXTURE, "gamestate")
+    graph = load_graph(str(zpath))
+    assert len(graph.characters) == 3
+    assert len(graph.titles) == 4

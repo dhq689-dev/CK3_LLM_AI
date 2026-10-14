@@ -32,6 +32,15 @@ Every arm below loads `cg6_start`, runs to a fixed date **30 years later
 
 No LLM needed; fast.
 
+> Quick path: run `.\cg6_dose.ps1` from the repo. It generates the tier-1
+> effect, pauses while you play/save `dose_t1`, generates the tier-5 effect,
+> pauses for `dose_t5`, then runs the `evaluate`. It also prints the active tier
+> distribution after each generation so you can confirm it worked.
+
+**Critical order for every arm: generate the effect FIRST → then reload CK3 →
+load `cg6_start` → play → save.** Generating after loading CK3 does nothing
+until you relaunch.
+
 **Arm A1 (tier 1):**
 ```powershell
 python -m ck3_strategist "$SAVES\cg6_start.ck3" --force-aggression 0 `

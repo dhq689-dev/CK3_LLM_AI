@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -73,7 +74,15 @@ class Evaluation:
 
 
 def load_graph(path: str | Path) -> WorldGraph:
-    return WorldGraph.from_save(SaveReader(str(path)))
+    """Parse a gamestate, unzipping a ``.ck3`` archive first if needed."""
+    from .cli import extract_gamestate
+
+    gamestate_path, is_temp = extract_gamestate(str(path))
+    try:
+        return WorldGraph.from_save(SaveReader(gamestate_path))
+    finally:
+        if is_temp:
+            os.unlink(gamestate_path)
 
 
 def wars_delta(
