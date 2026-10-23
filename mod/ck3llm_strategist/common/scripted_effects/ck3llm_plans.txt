@@ -1,24 +1,1364 @@
 ﻿ck3llm_apply_plans = {
-	title:k_france.holder ?= {
-		if = {
-			limit = { NOT = { var:ck3llm_plan_id = 576607408 } }
-			set_variable = { name = ck3llm_plan_id value = 576607408 }
-			add_character_modifier = {
-				modifier = ck3llm_aggressive_2
-				years = 5
-			}
-			debug_log = "ck3llm: plan 576607408 applied"
+	title:k_orissa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 143172456 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		set_variable = { name = ck3llm_ally_target value = title:c_khinjali_mandala.holder }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
 		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 143172456 applied"
+	}
+	title:k_rajputana.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3096285615 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3096285615 applied"
+	}
+	title:k_ghana.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3103490826 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:c_masin }
+		set_variable = { name = ck3llm_war_target value = title:c_hodh }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3103490826 applied"
+	}
+	title:k_zhetysu.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 886807140 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:c_bukhara }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 886807140 applied"
+	}
+	title:k_scotland.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2579209020 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2579209020 applied"
+	}
+	title:k_africa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2180173893 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:c_tabassa }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2180173893 applied"
+	}
+	title:e_great_liao.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1227058215 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1227058215 applied"
+	}
+	title:k_guge.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1687514875 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1687514875 applied"
+	}
+	title:k_malwa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2790107353 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2790107353 applied"
+	}
+	title:k_maghreb.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1678221435 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		set_variable = { name = ck3llm_war_target value = title:d_tlemcen }
+		set_variable = { name = ck3llm_ally_target value = character:34425 }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1678221435 applied"
+	}
+	title:k_navarra.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1562224944 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		set_variable = { name = ck3llm_ally_target value = title:k_aragon.holder }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1562224944 applied"
+	}
+	title:k_castille.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1022587275 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1022587275 applied"
+	}
+	title:k_pechenegs.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 725297226 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 725297226 applied"
+	}
+	title:k_leon.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3446089238 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3446089238 applied"
+	}
+	title:e_caspian-pontic_steppe.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3213824027 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3213824027 applied"
+	}
+	title:k_gujarat.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4104919269 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4104919269 applied"
+	}
+	title:k_aragon.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3842093938 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_1
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3842093938 applied"
+	}
+	title:k_poland.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3077386613 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3077386613 applied"
+	}
+	title:k_champa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3744491509 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3744491509 applied"
+	}
+	title:k_balhae.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1904340802 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1904340802 applied"
+	}
+	title:k_england.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3600571952 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3600571952 applied"
+	}
+	title:k_hexi.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1758430897 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1758430897 applied"
+	}
+	title:k_sweden.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3637383971 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_5
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3637383971 applied"
+	}
+	title:k_kashmir.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 464526154 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 464526154 applied"
+	}
+	title:e_hre.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2545603376 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2545603376 applied"
+	}
+	title:k_kamarupa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4271625036 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4271625036 applied"
+	}
+	title:k_xingyuan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1497780240 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1497780240 applied"
+	}
+	title:k_hungary.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2053323119 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2053323119 applied"
+	}
+	title:k_hunan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 220447074 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 220447074 applied"
+	}
+	title:k_lingxi.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1927600635 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1927600635 applied"
+	}
+	title:e_japan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1566048714 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1566048714 applied"
+	}
+	title:k_khorasan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3912653510 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3912653510 applied"
+	}
+	title:k_henan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3106170808 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3106170808 applied"
+	}
+	title:k_qingxu.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4145698270 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4145698270 applied"
+	}
+	title:k_shannan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 788584507 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 788584507 applied"
+	}
+	title:k_huainan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1457726979 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1457726979 applied"
+	}
+	title:k_jiangdong.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1129414112 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1129414112 applied"
+	}
+	title:k_lingnan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 792192105 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 792192105 applied"
+	}
+	title:k_volga_bulgaria.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1304933799 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1304933799 applied"
+	}
+	title:k_dzungaria.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2266817868 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		set_variable = { name = ck3llm_ally_target value = character:27724 }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2266817868 applied"
+	}
+	title:k_fujian.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1195594003 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1195594003 applied"
+	}
+	title:k_karnata.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2326518599 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2326518599 applied"
+	}
+	title:k_malayadvipa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1871111888 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		set_variable = { name = ck3llm_ally_target value = character:64307 }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1871111888 applied"
+	}
+	title:k_dali.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4015829884 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4015829884 applied"
+	}
+	title:k_xichuan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4028725996 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4028725996 applied"
 	}
 	title:e_byzantium.holder ?= {
-		if = {
-			limit = { NOT = { var:ck3llm_plan_id = 3997778701 } }
-			set_variable = { name = ck3llm_plan_id value = 3997778701 }
-			add_character_modifier = {
-				modifier = ck3llm_aggressive_2
-				years = 5
-			}
-			debug_log = "ck3llm: plan 3997778701 applied"
+		set_variable = { name = ck3llm_plan_id value = 3712284788 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		set_variable = { name = ck3llm_ally_target value = title:c_lesbos.holder }
+		set_variable = { name = ck3llm_war_target value = title:d_thessalonika }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
 		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3712284788 applied"
+	}
+	title:k_orthodox.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1545204887 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1545204887 applied"
+	}
+	title:k_guannei.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4152307610 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4152307610 applied"
+	}
+	title:k_dongchuan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 251937861 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 251937861 applied"
+	}
+	title:k_hebei.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3995812546 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3995812546 applied"
+	}
+	title:k_jiangxi.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 124381237 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 124381237 applied"
+	}
+	title:k_venice.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 94821008 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 94821008 applied"
+	}
+	title:k_gobi.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3922798506 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:e_great_liao }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3922798506 applied"
+	}
+	title:k_raole.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1707675974 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1707675974 applied"
+	}
+	title:k_abyssinia.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2716249252 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2716249252 applied"
+	}
+	title:k_hedong.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3065250646 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3065250646 applied"
+	}
+	title:k_papal_state.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1794945671 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1794945671 applied"
+	}
+	title:k_youji.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3299936587 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3299936587 applied"
+	}
+	title:k_tamilakam.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2066184115 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2066184115 applied"
+	}
+	title:k_transoxiana.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3468493912 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3468493912 applied"
+	}
+	title:k_liangzhe.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2014913046 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_1
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2014913046 applied"
+	}
+	title:k_kuizhou.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 666546730 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 666546730 applied"
+	}
+	title:k_pagan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2984187365 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2984187365 applied"
+	}
+	title:k_norway.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 4061178535 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 4061178535 applied"
+	}
+	title:k_gondwana.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 812565503 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 812565503 applied"
+	}
+	title:k_daibei.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 243725262 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 243725262 applied"
+	}
+	title:k_georgia.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3529446102 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3529446102 applied"
+	}
+	title:k_denmark.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2150056475 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:k_england }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2150056475 applied"
+	}
+	title:k_funan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3333985506 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3333985506 applied"
+	}
+	title:e_goryeo.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3055424621 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3055424621 applied"
+	}
+	title:k_croatia.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2873506588 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2873506588 applied"
+	}
+	title:k_bengal.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2263900585 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2263900585 applied"
+	}
+	title:k_kabulistan.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2591643601 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:d_sistan }
+		set_variable = { name = ck3llm_war_target value = title:d_lahore }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2591643601 applied"
+	}
+	title:k_sindh.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1985807815 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1985807815 applied"
+	}
+	title:k_viet.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 2484527822 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		set_variable = { name = ck3llm_ally_target value = character:37234 }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 2484527822 applied"
+	}
+	title:k_pisa.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 3006757175 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_3
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 3006757175 applied"
+	}
+	title:k_ruthenia.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1198119083 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_2
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1198119083 applied"
+	}
+	title:e_persia.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1169036470 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_4
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1169036470 applied"
+	}
+	title:k_egypt.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 1240902897 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_ally_target
+		set_variable = { name = ck3llm_war_target value = title:c_al-buhaira }
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_1
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 1240902897 applied"
+	}
+	title:k_maryul.holder ?= {
+		set_variable = { name = ck3llm_plan_id value = 510639013 }
+		set_variable = { name = ck3llm_plan_start value = 1068 }
+		remove_variable = ck3llm_war_target
+		remove_variable = ck3llm_ally_target
+		remove_character_modifier = ck3llm_aggressive_1
+		remove_character_modifier = ck3llm_aggressive_2
+		remove_character_modifier = ck3llm_aggressive_3
+		remove_character_modifier = ck3llm_aggressive_4
+		remove_character_modifier = ck3llm_aggressive_5
+		add_character_modifier = {
+			modifier = ck3llm_aggressive_1
+			years = 5
+		}
+		ck3llm_execute_orders = yes
+		debug_log = "ck3llm: plan 510639013 applied"
 	}
 }
